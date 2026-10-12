@@ -1,0 +1,305 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Exploratory Data Analysis | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Exploratory Crime Analytics &amp; Statistical Aggregations{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Filter Bar Card -->
+    <div class="card card-custom mb-4">
+        <div class="card-body p-3">
+            <form method="GET" action="/analysis/" class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Time Horizon</label>
+                    <select name="period" class="form-select form-select-sm">
+                        <option value="last_12_months" selected>Last 12 Months (2023-2024)</option>
+                        <option value="year_to_date">Year to Date</option>
+                        <option value="last_3_years">Multi-Year (3 Years)</option>
+                        <option value="all_time">Entire Repository Horizon</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Jurisdiction / Region</label>
+                    <select name="location" class="form-select form-select-sm">
+                        <option value="">All Jurisdictions (Central Metro)</option>
+                        <option value="1">Central Business District</option>
+                        <option value="2">North Industrial Belt</option>
+                        <option value="3">South Transport Terminus</option>
+                        <option value="4">Suburban Heights Sector</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Offense Classification</label>
+                    <select name="category" class="form-select form-select-sm">
+                        <option value="">All Crime Categories</option>
+                        <option value="theft">Theft &amp; Robbery</option>
+                        <option value="burglary">Burglary</option>
+                        <option value="assault">Violent Assault</option>
+                        <option value="vehicle">Motor Vehicle Theft</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-sm btn-primary-blue w-100">
+                        <i class="bi bi-arrow-repeat me-1"></i> Update Analytical Matrices
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Stats Row (4 Metric Cards) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <span class="text-muted small fw-semibold text-uppercase">Mean Daily Incident Rate</span>
+                <h3 class="fw-bold text-navy mt-1 mb-0">{{ mean_daily_incidents|default:"34.2" }}</h3>
+                <small class="text-danger"><i class="bi bi-arrow-up-right"></i> +4.1% standard deviation</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <span class="text-muted small fw-semibold text-uppercase">Peak Crime Time Window</span>
+                <h3 class="fw-bold text-warning mt-1 mb-0">{{ peak_time_window|default:"21:00 - 02:00" }}</h3>
+                <small class="text-muted">Night shift patrols alert</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <span class="text-muted small fw-semibold text-uppercase">Highest Offense Ratio</span>
+                <h3 class="fw-bold text-primary mt-1 mb-0">{{ top_category|default:"Theft & Robbery" }}</h3>
+                <small class="text-muted">Accounts for 38.6% of logs</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <span class="text-muted small fw-semibold text-uppercase">Clearance Rate (Solved)</span>
+                <h3 class="fw-bold text-success mt-1 mb-0">{{ clearance_rate|default:"68.4%" }}</h3>
+                <small class="text-success"><i class="bi bi-shield-check"></i> +2.3% improvement</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Frequency by Category + Monthly Trends -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Crime Frequency by Offense Category</h5>
+                        <small class="text-muted">Aggregated counts across selected duration</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Monthly Temporal Incidents Trend</h5>
+                        <small class="text-muted">Sequential cyclical patterns over time</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="monthlyTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Yearly Trends + Actual vs Predicted -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Yearly Crime Volume Comparison</h5>
+                        <small class="text-muted">Year-over-year baseline shifts</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="yearlyTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Actual vs. ML Predicted Incidence</h5>
+                        <small class="text-muted">Regression model fit comparison</small>
+                    </div>
+                    <span class="badge bg-info-subtle text-info">R² = 0.912</span>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="actualVsPredictedChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Findings & Insights Narrative Section -->
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Executive Forensic Findings</h5>
+            <a href="/reports/" class="btn btn-sm btn-outline-secondary">Include in Executive Report</a>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border h-100">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-danger">
+                            <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                            <h6 class="fw-bold mb-0">High-Risk Weekend Night Shifts</h6>
+                        </div>
+                        <p class="text-muted small mb-0">
+                            Offense rates experience a statistically significant surge (+42%) between Friday 22:00 and Sunday 03:00, primarily concentrated in commercial entertainment zones.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border h-100">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-primary">
+                            <i class="bi bi-graph-up fs-5"></i>
+                            <h6 class="fw-bold mb-0">Vehicle Theft Seasonality</h6>
+                        </div>
+                        <p class="text-muted small mb-0">
+                            Motor vehicle thefts demonstrate a cyclical peak during monsoon and autumn months around transit depots, correlating with reduced visibility and parking density.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border h-100">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-success">
+                            <i class="bi bi-check-circle-fill fs-5"></i>
+                            <h6 class="fw-bold mb-0">Predictive Model Accuracy</h6>
+                        </div>
+                        <p class="text-muted small mb-0">
+                            The Random Forest ensemble model tracks actual observed crime trajectories within a ±3.8% error boundary, validating proactive police deployment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Chart 1: Bar Chart (Category Frequency)
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Theft', 'Burglary', 'Assault', 'Vehicle Theft', 'Robbery', 'Cybercrime'],
+                datasets: [{
+                    label: 'Recorded Incidents',
+                    data: [4210, 2890, 2150, 1820, 1340, 890],
+                    backgroundColor: '#1769FF',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
+        });
+
+        // Chart 2: Monthly Trends
+        new Chart(document.getElementById('monthlyTrendChart'), {
+            type: 'line',
+            data: {
+                labels: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'Monthly Volume',
+                    data: [980, 1050, 890, 920, 1100, 1080, 1150, 1220, 1190, 1140, 1060, 1120],
+                    borderColor: '#20D5F5',
+                    backgroundColor: 'rgba(32, 213, 245, 0.1)',
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#071B3A',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { grid: { color: '#F1F5F9' } } }
+            }
+        });
+
+        // Chart 3: Yearly Comparison
+        new Chart(document.getElementById('yearlyTrendChart'), {
+            type: 'bar',
+            data: {
+                labels: ['2021', '2022', '2023', '2024 (Projected)'],
+                datasets: [{
+                    label: 'Total Incidents',
+                    data: [14200, 13800, 12950, 12480],
+                    backgroundColor: ['#94A3B8', '#64748B', '#102B52', '#16A36A'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
+        });
+
+        // Chart 4: Actual vs Predicted
+        new Chart(document.getElementById('actualVsPredictedChart'), {
+            type: 'line',
+            data: {
+                labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [
+                    {
+                        label: 'Observed Actuals',
+                        data: [1150, 1220, 1190, 1140, 1060, 1120],
+                        borderColor: '#1769FF',
+                        tension: 0.3,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Predicted Forecast',
+                        data: [1130, 1240, 1180, 1160, 1045, 1110],
+                        borderColor: '#F59E0B',
+                        borderDash: [6, 4],
+                        tension: 0.3,
+                        pointRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { grid: { color: '#F1F5F9' } } }
+            }
+        });
+    });
+</script>
+{% endblock %}

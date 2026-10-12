@@ -1,0 +1,145 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Model: {{ model.name }} | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Model Details &amp; Evaluation Metrics{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="{% url 'model_training:model_list' %}">Models</a></li>
+                    <li class="breadcrumb-item active">{{ model.name }}</li>
+                </ol>
+            </nav>
+            <h5 class="fw-bold mb-0" style="color: var(--navy-primary);">{{ model.name }} (v{{ model.version }})</h5>
+        </div>
+        <div>
+            <a href="{% url 'model_training:model_list' %}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+            <a href="{% url 'prediction:prediction' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-graph-up me-1"></i> Run Prediction
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Metadata Card -->
+        <div class="col-lg-5">
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2 text-primary"></i>Model Information</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted" style="width: 40%;">Algorithm:</td>
+                            <td><span class="badge bg-light text-dark border">{{ model.get_algorithm_display }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Target Variable:</td>
+                            <td><code>{{ model.target_variable }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Status:</td>
+                            <td>
+                                {% if model.status == 'trained' %}
+                                    <span class="badge bg-success-subtle text-success border">Trained</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border">{{ model.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Created By:</td>
+                            <td>{{ model.created_by.username }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Trained Date:</td>
+                            <td>{{ model.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Features Card -->
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-tags me-2 text-primary"></i>Model Features</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for feat in model.features %}
+                            <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-check2 text-success me-1"></i>{{ feat }}</span>
+                        {% empty %}
+                            <span class="text-muted small">No specific features recorded</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Metrics -->
+        <div class="col-lg-7">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Evaluation Metrics</h6>
+                </div>
+                <div class="card-body">
+                    {% if evaluation %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 col-md-3">
+                            <div class="p-3 rounded text-center border" style="background: rgba(23, 105, 255, 0.04);">
+                                <small class="text-muted d-block mb-1">R² Score</small>
+                                <h4 class="fw-bold mb-0 text-primary">{{ evaluation.r2_score|floatformat:4 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="p-3 rounded text-center border" style="background: rgba(0, 227, 150, 0.04);">
+                                <small class="text-muted d-block mb-1">RMSE</small>
+                                <h4 class="fw-bold mb-0 text-success">{{ evaluation.rmse|floatformat:4 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="p-3 rounded text-center border" style="background: rgba(254, 176, 25, 0.04);">
+                                <small class="text-muted d-block mb-1">MAE</small>
+                                <h4 class="fw-bold mb-0 text-warning">{{ evaluation.mae|floatformat:4 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="p-3 rounded text-center border" style="background: rgba(119, 93, 208, 0.04);">
+                                <small class="text-muted d-block mb-1">Baseline MAE</small>
+                                <h4 class="fw-bold mb-0 text-purple">{{ evaluation.baseline_mae|default:0.0|floatformat:4 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded p-3 mb-3 bg-light">
+                        <h6 class="fw-bold small text-muted text-uppercase mb-2">Sample Breakdown</h6>
+                        <div class="row g-2 small">
+                            <div class="col-6"><strong>Training Samples:</strong> {{ evaluation.training_samples }}</div>
+                            <div class="col-6"><strong>Test Samples:</strong> {{ evaluation.test_samples }}</div>
+                        </div>
+                    </div>
+
+                    {% if evaluation.evaluation_notes %}
+                    <div class="border rounded p-3 bg-light">
+                        <h6 class="fw-bold small text-muted text-uppercase mb-2">Notes</h6>
+                        <p class="small text-muted mb-0">{{ evaluation.evaluation_notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-hourglass-split display-6 mb-2 d-block"></i>
+                        <p class="mb-0">No evaluation record available for this model.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

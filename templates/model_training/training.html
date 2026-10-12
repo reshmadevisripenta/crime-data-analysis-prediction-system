@@ -1,0 +1,273 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Model Training | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Machine Learning Model Training &amp; Evaluation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    .step-indicator-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: #E2E8F0;
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+    .step-dot {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #FFFFFF;
+        border: 2px solid #CBD5E1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #64748B;
+        position: relative;
+        z-index: 2;
+    }
+    .step-dot.active {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+        color: #FFFFFF;
+        box-shadow: 0 0 0 4px rgba(23, 105, 255, 0.2);
+    }
+    .step-dot.completed {
+        background: var(--success-color);
+        border-color: var(--success-color);
+        color: #FFFFFF;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Training Setup Card -->
+    <div class="card card-custom mb-4">
+        <div class="card-header-custom">
+            <div>
+                <h5 class="card-title-custom"><i class="bi bi-cpu-fill text-primary me-2"></i>Configure &amp; Train Predictive Model</h5>
+                <small class="text-muted">Select algorithms, feature vectors, and hyperparameter grids</small>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">Scikit-Learn v1.3</span>
+        </div>
+        <div class="card-body p-4">
+            <!-- Training Pipeline Stepper -->
+            <div class="step-indicator-wrapper">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="step-dot completed"><i class="bi bi-check"></i></div>
+                    <small class="mt-2 fw-semibold text-success">1. Ingestion</small>
+                </div>
+                <div class="d-flex flex-column align-items-center">
+                    <div class="step-dot active">2</div>
+                    <small class="mt-2 fw-semibold text-primary">2. Model Training</small>
+                </div>
+                <div class="d-flex flex-column align-items-center">
+                    <div class="step-dot">3</div>
+                    <small class="mt-2 fw-semibold text-muted">3. Validation &amp; Metrics</small>
+                </div>
+            </div>
+
+            <form method="POST" action="/model-training/train/" id="trainingForm">
+                {% csrf_token %}
+                <div class="row g-3 mb-4">
+                    <!-- Dataset Selection -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Target Ingestion Dataset *</label>
+                        <select name="dataset_id" class="form-select" required>
+                            <option value="1">metro_crime_log_2024_q3.csv (12,480 Records)</option>
+                            <option value="2">precinct_north_logs.xlsx (3,210 Records)</option>
+                            <option value="all" selected>All Combined Historical Records (15,690 Records)</option>
+                        </select>
+                    </div>
+
+                    <!-- Algorithm Selection -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Regression Algorithm *</label>
+                        <select name="algorithm" class="form-select" required>
+                            <option value="random_forest" selected>Random Forest Regressor (Ensemble Trees)</option>
+                            <option value="gradient_boosting">Gradient Boosting Regressor (GBR)</option>
+                            <option value="linear_regression">Linear Regression (Baseline)</option>
+                            <option value="ridge">Ridge Regression (L2 Regularized)</option>
+                            <option value="svr">Support Vector Regressor (RBF Kernel)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Feature Selection Checkboxes -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-secondary d-block mb-2">Feature Vector Inclusions</label>
+                    <div class="row g-2">
+                        <div class="col-sm-6 col-md-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" name="features" value="temporal_hour" id="f1" checked>
+                                <label class="form-check-label small fw-semibold" for="f1">Temporal Hour of Day</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" name="features" value="day_of_week" id="f2" checked>
+                                <label class="form-check-label small fw-semibold" for="f2">Day of Week Cycle</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" name="features" value="hotspot_density" id="f3" checked>
+                                <label class="form-check-label small fw-semibold" for="f3">Hotspot Density Score</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" name="features" value="historical_lag" id="f4" checked>
+                                <label class="form-check-label small fw-semibold" for="f4">30-Day Lag Frequency</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hyperparameters Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Number of Estimators (Trees)</label>
+                        <input type="number" name="n_estimators" class="form-control" value="150" min="10" max="500">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Max Tree Depth</label>
+                        <input type="number" name="max_depth" class="form-control" value="15" min="2" max="50">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Train / Test Split Ratio</label>
+                        <select name="test_size" class="form-select">
+                            <option value="0.2" selected>80% Train / 20% Test Split</option>
+                            <option value="0.3">70% Train / 30% Test Split</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary-blue px-4 py-2 fs-6">
+                        <i class="bi bi-play-circle-fill me-2"></i> Launch Model Training Pipeline
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Model Evaluation Metrics (Row of 4) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3 border-start border-4 border-success">
+                <span class="text-muted small fw-semibold text-uppercase">R² Determination Score</span>
+                <h3 class="fw-bold text-success mt-1 mb-0">{{ active_model.r2_score|default:"0.912" }}</h3>
+                <small class="text-success"><i class="bi bi-arrow-up-short"></i> +12% over baseline</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3 border-start border-4 border-primary">
+                <span class="text-muted small fw-semibold text-uppercase">Mean Absolute Error (MAE)</span>
+                <h3 class="fw-bold text-navy mt-1 mb-0">{{ active_model.mae|default:"2.48" }}</h3>
+                <small class="text-muted">Incidents variance</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3 border-start border-4 border-info">
+                <span class="text-muted small fw-semibold text-uppercase">Root Mean Squared Error</span>
+                <h3 class="fw-bold text-navy mt-1 mb-0">{{ active_model.rmse|default:"3.64" }}</h3>
+                <small class="text-muted">Standard deviation of residuals</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3 border-start border-4 border-warning">
+                <span class="text-muted small fw-semibold text-uppercase">Baseline Lift</span>
+                <h3 class="fw-bold text-warning mt-1 mb-0">+34.8%</h3>
+                <small class="text-muted">vs Dummy Mean predictor</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Training History Table -->
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom">Model Training History &amp; Versions</h5>
+            <span class="badge bg-light text-dark border">Version Repository</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th class="ps-4">Model Name</th>
+                            <th>Algorithm</th>
+                            <th>R² Score</th>
+                            <th>MAE</th>
+                            <th>Status</th>
+                            <th>Trained Date</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if models %}
+                            {% for m in models %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-navy">{{ m.name }}</td>
+                                <td>{{ m.algorithm }}</td>
+                                <td class="fw-bold text-success">{{ m.r2_score }}</td>
+                                <td>{{ m.mae }}</td>
+                                <td><span class="badge bg-success-subtle text-success">Deployed</span></td>
+                                <td class="text-muted">{{ m.created_at|date:"M d, Y" }}</td>
+                                <td class="pe-4 text-end">
+                                    <a href="/prediction/?model_id={{ m.id }}" class="btn btn-sm btn-outline-primary py-0">Use For Forecast</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>RandomForest_v2.4_Prod</td>
+                                <td>Random Forest Regressor</td>
+                                <td class="fw-bold text-success">0.912</td>
+                                <td>2.48</td>
+                                <td><span class="badge bg-success-subtle text-success">Active In Production</span></td>
+                                <td class="text-muted">Oct 11, 2024</td>
+                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>GradientBoost_v1.8</td>
+                                <td>Gradient Boosting (GBR)</td>
+                                <td class="fw-bold text-success">0.894</td>
+                                <td>2.82</td>
+                                <td><span class="badge bg-light text-dark border">Archived</span></td>
+                                <td class="text-muted">Oct 04, 2024</td>
+                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>LinearReg_Baseline</td>
+                                <td>Linear Regression</td>
+                                <td class="fw-bold text-warning">0.718</td>
+                                <td>4.95</td>
+                                <td><span class="badge bg-light text-dark border">Baseline</span></td>
+                                <td class="text-muted">Sep 28, 2024</td>
+                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

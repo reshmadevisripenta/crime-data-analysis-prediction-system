@@ -1,0 +1,127 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}{% if record %}Edit Incident Record #{{ record.id }}{% else %}Register Crime Incident{% endif %} | Crime Intelligence Platform{% endblock %}
+{% block page_title %}{% if record %}Edit Crime Incident Record{% else %}Add New Incident Record{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <p class="text-muted small mb-0">Record single incident telemetry into the centralized crime database.</p>
+        </div>
+        <a href="/crime-data/" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Registry
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>
+                        {% if record %}Update Incident Record #CR-{{ record.id }}{% else %}New Incident Intake Form{% endif %}
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary">CJIS Compliant</span>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+
+                        <!-- Row 1: Category & Location -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label small fw-semibold text-secondary">Crime Offense Category *</label>
+                                <select name="category" id="category" class="form-select" required>
+                                    <option value="" disabled {% if not record %}selected{% endif %}>Select Offense Category...</option>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat.id }}" {% if record and record.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                    {% empty %}
+                                        <option value="1">Armed Robbery</option>
+                                        <option value="2">Burglary</option>
+                                        <option value="3">Vehicle Theft</option>
+                                        <option value="4">Assault</option>
+                                        <option value="5">Homicide</option>
+                                        <option value="6">Cybercrime / Fraud</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="location" class="form-label small fw-semibold text-secondary">Location / Jurisdiction *</label>
+                                <select name="location" id="location" class="form-select" required>
+                                    <option value="" disabled {% if not record %}selected{% endif %}>Select Jurisdiction...</option>
+                                    {% for loc in locations %}
+                                        <option value="{{ loc.id }}" {% if record and record.location.id == loc.id %}selected{% endif %}>{{ loc.name }} ({{ loc.city }})</option>
+                                    {% empty %}
+                                        <option value="1">7th Ave Market District (Central)</option>
+                                        <option value="2">West Industrial Belt (North)</option>
+                                        <option value="3">South Transit Hub (Central)</option>
+                                        <option value="4">Suburban Heights (East)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Date & Time -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="incident_date" class="form-label small fw-semibold text-secondary">Incident Date *</label>
+                                <input type="date" name="incident_date" id="incident_date" class="form-control" value="{{ record.incident_date|date:'Y-m-d'|default:'' }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="incident_time" class="form-label small fw-semibold text-secondary">Incident Time (Optional)</label>
+                                <input type="time" name="incident_time" id="incident_time" class="form-control" value="{{ record.incident_time|time:'H:i'|default:'' }}">
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Severity & Status -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="severity" class="form-label small fw-semibold text-secondary">Severity Rating *</label>
+                                <select name="severity" id="severity" class="form-select" required>
+                                    <option value="low" {% if record and record.severity == 'low' %}selected{% endif %}>Low</option>
+                                    <option value="medium" {% if not record or record.severity == 'medium' %}selected{% endif %}>Medium</option>
+                                    <option value="high" {% if record and record.severity == 'high' %}selected{% endif %}>High</option>
+                                    <option value="critical" {% if record and record.severity == 'critical' %}selected{% endif %}>Critical</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="status" class="form-label small fw-semibold text-secondary">Investigation Status *</label>
+                                <select name="status" id="status" class="form-select" required>
+                                    <option value="reported" {% if not record or record.status == 'reported' %}selected{% endif %}>Reported</option>
+                                    <option value="under_investigation" {% if record and record.status == 'under_investigation' %}selected{% endif %}>Under Investigation</option>
+                                    <option value="solved" {% if record and record.status == 'solved' %}selected{% endif %}>Solved</option>
+                                    <option value="closed" {% if record and record.status == 'closed' %}selected{% endif %}>Closed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Source -->
+                        <div class="mb-3">
+                            <label for="source" class="form-label small fw-semibold text-secondary">Source / Dispatch Reference</label>
+                            <input type="text" name="source" id="source" class="form-control" placeholder="e.g. 911 Dispatch Emergency Call #442" value="{{ record.source|default:'' }}">
+                        </div>
+
+                        <!-- Row 5: Detailed Narrative Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label small fw-semibold text-secondary">Detailed Incident Description *</label>
+                            <textarea name="description" id="description" class="form-control" rows="5" placeholder="Provide full context regarding suspects, weapons involved, vehicle descriptions, or eyewitness accounts..." required>{{ record.description|default:'' }}</textarea>
+                            <div class="form-text small">This description will be processed for semantic triple extraction in the ontology layer.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/crime-data/" class="btn btn-light px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary-blue px-4">
+                                <i class="bi bi-save me-1"></i> {% if record %}Update Incident Record{% else %}Save Crime Record{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

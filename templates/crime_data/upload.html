@@ -1,0 +1,284 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Upload Dataset | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Crime Dataset Ingestion &amp; Validation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-dropzone {
+        border: 2px dashed #CBD5E1;
+        border-radius: 16px;
+        background-color: #F8FAFC;
+        padding: 3.5rem 2rem;
+        text-align: center;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .upload-dropzone:hover, .upload-dropzone.dragover {
+        border-color: var(--primary-blue);
+        background-color: rgba(23, 105, 255, 0.03);
+    }
+    .upload-icon-circle {
+        width: 76px;
+        height: 76px;
+        background: linear-gradient(135deg, rgba(23, 105, 255, 0.12), rgba(32, 213, 245, 0.2));
+        color: var(--primary-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        margin: 0 auto 1.5rem;
+    }
+    .file-preview-card {
+        display: none;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4 mb-4">
+        <!-- Main Upload Card -->
+        <div class="col-lg-8">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Upload Crime Records File</h5>
+                        <small class="text-muted">Supports tabular CSV and Excel (.xlsx) formats</small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-check me-1"></i>Schema Checked</span>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="datasetUploadForm" action="/crime-data/upload/">
+                        {% csrf_token %}
+                        
+                        <div class="upload-dropzone" id="dropZone">
+                            <input type="file" name="file" id="fileInput" class="d-none" accept=".csv, .xlsx, .xls" required>
+                            <div class="upload-icon-circle">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+                            <h5 class="fw-bold text-navy mb-1">Drag and drop your crime dataset here</h5>
+                            <p class="text-muted small mb-3">or browse from your local workstation</p>
+                            
+                            <button type="button" class="btn btn-outline-primary btn-sm px-3" onclick="document.getElementById('fileInput').click();">
+                                <i class="bi bi-folder2-open me-1"></i> Browse Files
+                            </button>
+
+                            <div class="d-flex justify-content-center gap-2 mt-4">
+                                <span class="badge bg-light text-secondary border px-2 py-1"><i class="bi bi-filetype-csv text-success me-1"></i>.CSV</span>
+                                <span class="badge bg-light text-secondary border px-2 py-1"><i class="bi bi-filetype-xlsx text-success me-1"></i>.XLSX</span>
+                                <span class="badge bg-light text-secondary border px-2 py-1">Max 50 MB</span>
+                            </div>
+                        </div>
+
+                        <!-- Selected File Preview Container -->
+                        <div class="file-preview-card" id="filePreview">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3 fs-3">
+                                        <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark" id="fileName">dataset.csv</h6>
+                                        <small class="text-muted" id="fileSize">2.4 MB</small>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="removeFileBtn">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="reset" class="btn btn-light" id="resetBtn">Cancel</button>
+                            <button type="submit" class="btn btn-primary-blue px-4" id="uploadBtn">
+                                <i class="bi bi-upload me-1"></i> Validate &amp; Ingest Dataset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements & Guidelines Sidebar -->
+        <div class="col-lg-4">
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom"><i class="bi bi-card-checklist text-primary me-2"></i>Schema Checklist</h5>
+                </div>
+                <div class="card-body p-4 small">
+                    <p class="text-muted">Ensure your uploaded table includes the required header fields below for correct ontology mapping:</p>
+                    
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>category</code>
+                            <span class="badge bg-danger-subtle text-danger">Required</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>location_name</code>
+                            <span class="badge bg-danger-subtle text-danger">Required</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>incident_date</code>
+                            <span class="badge bg-danger-subtle text-danger">YYYY-MM-DD</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>latitude, longitude</code>
+                            <span class="badge bg-primary-subtle text-primary">Recommended</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>severity</code>
+                            <span class="badge bg-secondary-subtle text-secondary">Low/Med/High</span>
+                        </li>
+                    </ul>
+
+                    <div class="p-3 bg-light rounded-3 border">
+                        <span class="fw-semibold text-dark d-block mb-1"><i class="bi bi-lightbulb text-warning me-1"></i>Sample Template</span>
+                        <p class="text-muted mb-2" style="font-size: 0.8rem;">Download a standardized CSV template pre-configured for instant upload.</p>
+                        <a href="#" class="btn btn-sm btn-outline-secondary w-100">
+                            <i class="bi bi-download me-1"></i> Download Template (.csv)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom">Dataset Ingestion History</h5>
+                    <span class="badge bg-light text-dark border">Recent Runs</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">File Name</th>
+                                    <th>Total Records</th>
+                                    <th>Valid Records</th>
+                                    <th>Invalid Records</th>
+                                    <th>Status</th>
+                                    <th>Uploaded At</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                {% if upload_history %}
+                                    {% for upload in upload_history %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">
+                                            <i class="bi bi-file-earmark-text text-primary me-2"></i>{{ upload.original_filename }}
+                                        </td>
+                                        <td>{{ upload.total_records }}</td>
+                                        <td class="text-success fw-semibold">{{ upload.valid_records }}</td>
+                                        <td class="text-danger fw-semibold">{{ upload.invalid_records }}</td>
+                                        <td>
+                                            {% if upload.status == 'completed' %}
+                                                <span class="badge bg-success-subtle text-success">Completed</span>
+                                            {% elif upload.status == 'processing' %}
+                                                <span class="badge bg-warning-subtle text-warning">Processing</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">{{ upload.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ upload.uploaded_at|date:"M d, Y H:i" }}</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="/crime-data/preview/?dataset_id={{ upload.id }}" class="btn btn-sm btn-outline-primary py-0 px-2" title="View Preview">
+                                                Preview
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>city_crime_report_2024.csv</td>
+                                        <td>12,480</td>
+                                        <td class="text-success fw-semibold">12,445</td>
+                                        <td class="text-danger fw-semibold">35</td>
+                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
+                                        <td class="text-muted">Oct 10, 2024 14:22</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="/crime-data/preview/" class="btn btn-sm btn-outline-primary py-0 px-2">Preview</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>precinct_north_logs.xlsx</td>
+                                        <td>3,210</td>
+                                        <td class="text-success fw-semibold">3,205</td>
+                                        <td class="text-danger fw-semibold">5</td>
+                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
+                                        <td class="text-muted">Oct 05, 2024 09:15</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="/crime-data/preview/" class="btn btn-sm btn-outline-primary py-0 px-2">Preview</a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewCard = document.getElementById('filePreview');
+        const fileNameEl = document.getElementById('fileName');
+        const fileSizeEl = document.getElementById('fileSize');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+
+        function handleFile(file) {
+            if (!file) return;
+            fileNameEl.textContent = file.name;
+            fileSizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            previewCard.style.display = 'block';
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        removeFileBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            previewCard.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}

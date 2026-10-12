@@ -1,0 +1,137 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Analyst Login | Crime Data Analysis & Prediction System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 75px);
+        background: radial-gradient(circle at 75% 20%, #102B52 0%, #071B3A 70%, #030B18 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        position: relative;
+    }
+
+    .auth-card {
+        background: #FFFFFF;
+        border-radius: 20px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+        width: 100%;
+        max-width: 440px;
+        padding: 2.75rem 2.25rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-brand-icon {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #1769FF, #20D5F5);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFFFFF;
+        font-size: 1.6rem;
+        margin: 0 auto 1.25rem;
+        box-shadow: 0 8px 20px rgba(23, 105, 255, 0.4);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 0.25rem rgba(23, 105, 255, 0.15);
+    }
+
+    .input-group-text {
+        background-color: #F8FAFC;
+        border-color: #CBD5E1;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="text-center">
+            <div class="auth-brand-icon">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h2 class="fw-bold text-navy mb-1" style="color: var(--primary-navy);">Welcome Back</h2>
+            <p class="text-muted small mb-4">Enter your credentials to access the intelligence console</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small border-0 mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'accounts:login' %}" novalidate>
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="id_username" class="form-label small fw-semibold text-secondary">Username or Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person text-muted"></i></span>
+                    <input type="text" name="username" class="form-control" id="id_username" placeholder="analyst_user" required autofocus>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="id_password" class="form-label small fw-semibold text-secondary mb-0">Password</label>
+                    <a href="{% url 'accounts:password_reset' %}" class="small text-decoration-none" style="color: var(--primary-blue); font-size: 0.8rem;">Forgot password?</a>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock text-muted"></i></span>
+                    <input type="password" name="password" class="form-control" id="id_password" placeholder="••••••••" required>
+                    <span class="input-group-text" id="togglePasswordBtn" title="Toggle password visibility">
+                        <i class="bi bi-eye text-muted" id="toggleIcon"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                <label class="form-check-label small text-muted" for="rememberMe">Remember my session for 30 days</label>
+            </div>
+
+            <button type="submit" class="btn btn-glow-blue w-100 py-2 fs-6 mb-3">
+                Sign In to Console
+            </button>
+
+            <div class="text-center">
+                <span class="small text-muted">Don't have an analyst account? </span>
+                <a href="{% url 'accounts:register' %}" class="small fw-semibold text-decoration-none" style="color: var(--primary-blue);">Create Account</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        const passwordInput = document.getElementById('id_password');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', () => {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('bi-eye');
+                    toggleIcon.classList.add('bi-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('bi-eye-slash');
+                    toggleIcon.classList.add('bi-eye');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

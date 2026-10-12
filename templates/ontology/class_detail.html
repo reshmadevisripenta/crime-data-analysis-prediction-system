@@ -1,0 +1,196 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Class: {{ class_obj.label }} | Ontology Knowledge Graph{% endblock %}
+{% block page_title %}Ontology Class: {{ class_obj.label }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="{% url 'ontology:explorer' %}">Ontology Explorer</a></li>
+                    <li class="breadcrumb-item active">{{ class_obj.label }}</li>
+                </ol>
+            </nav>
+            <h5 class="fw-bold mb-0" style="color: var(--navy-primary);">
+                <span class="badge me-2" style="background-color: {{ class_obj.color_code|default:'#1769FF' }}; width: 14px; height: 14px; display: inline-block; border-radius: 50%;"></span>
+                {{ class_obj.label }} (<code>{{ class_obj.name }}</code>)
+            </h5>
+        </div>
+        <div>
+            <a href="{% url 'ontology:explorer' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Explorer
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <!-- Class Overview -->
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2 text-primary"></i>Class Overview</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted" style="width: 35%;">URI / Name:</td>
+                            <td><code>{{ class_obj.name }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Label:</td>
+                            <td><strong>{{ class_obj.label }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Parent Class:</td>
+                            <td>
+                                {% if class_obj.parent_class %}
+                                    <a href="{% url 'ontology:class_detail' class_obj.parent_class.name %}" class="badge bg-light text-primary border">
+                                        {{ class_obj.parent_class.label }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">owl:Thing (Root)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    {% if class_obj.description %}
+                    <hr class="my-3">
+                    <h6 class="small fw-bold text-muted text-uppercase mb-1">Description</h6>
+                    <p class="small text-muted mb-0">{{ class_obj.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Subclasses -->
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-diagram-3 me-2 text-primary"></i>Subclasses ({{ subclasses.count }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if subclasses %}
+                    <ul class="list-group list-group-flush">
+                        {% for sub in subclasses %}
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <a href="{% url 'ontology:class_detail' sub.name %}" class="text-decoration-none fw-bold" style="color: var(--primary-blue);">
+                                {{ sub.label }}
+                            </a>
+                            <code class="small text-muted">{{ sub.name }}</code>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted small mb-0">No subclasses defined for this class.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <!-- Properties & Relationships -->
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-link-45deg me-2 text-primary"></i>Properties (Domain / Range)</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="small fw-bold text-muted text-uppercase mb-2">Domain Properties</h6>
+                    {% if domain_props %}
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Range</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in domain_props %}
+                                <tr>
+                                    <td><code>{{ p.name }}</code></td>
+                                    <td><span class="badge bg-light text-dark border">{{ p.property_type }}</span></td>
+                                    <td>
+                                        {% if p.range_class %}
+                                            <a href="{% url 'ontology:class_detail' p.range_class.name %}">{{ p.range_class.label }}</a>
+                                        {% else %}
+                                            <span class="text-muted">{{ p.range_datatype|default:"Literal" }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-3">No outgoing domain properties.</p>
+                    {% endif %}
+
+                    <h6 class="small fw-bold text-muted text-uppercase mb-2">Range Properties (Incoming)</h6>
+                    {% if range_props %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Property</th>
+                                    <th>From Domain</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in range_props %}
+                                <tr>
+                                    <td><code>{{ p.name }}</code></td>
+                                    <td><a href="{% url 'ontology:class_detail' p.domain_class.name %}">{{ p.domain_class.label }}</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No incoming range properties.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ontology Facts -->
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-node-plus me-2 text-primary"></i>Ontology Facts (Triples)</h6>
+                </div>
+                <div class="card-body">
+                    {% if facts %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Predicate</th>
+                                    <th>Object</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fact in facts %}
+                                <tr>
+                                    <td><strong>{{ fact.subject_class.label }}</strong></td>
+                                    <td><code>{{ fact.property.name }}</code></td>
+                                    <td>
+                                        {% if fact.object_class %}
+                                            <strong>{{ fact.object_class.label }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">{{ fact.literal_value }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No triples associated directly with this class.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

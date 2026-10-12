@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Crime Data Analysis & Prediction System{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --primary-navy: #071B3A;
+            --secondary-navy: #102B52;
+            --primary-blue: #1769FF;
+            --accent-cyan: #20D5F5;
+            --bg-color: #F4F7FC;
+            --card-bg: #FFFFFF;
+            --text-color: #1C2940;
+            --text-muted: #64748B;
+            --success-color: #16A36A;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6, .brand-font {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Navbar Styling */
+        .public-navbar {
+            background-color: rgba(7, 27, 58, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .public-navbar .navbar-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #FFFFFF !important;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-icon-box {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #1769FF, #20D5F5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 14px rgba(23, 105, 255, 0.4);
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem !important;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-cyan) !important;
+        }
+
+        .btn-glow-blue {
+            background-color: var(--primary-blue);
+            color: #FFFFFF !important;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.55rem 1.4rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(23, 105, 255, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-glow-blue:hover {
+            background-color: #0d57e0;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(23, 105, 255, 0.5);
+        }
+
+        .btn-outline-cyan {
+            color: var(--accent-cyan) !important;
+            border: 1.5px solid var(--accent-cyan);
+            background: transparent;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5rem 1.3rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-cyan:hover {
+            background: rgba(32, 213, 245, 0.12);
+            color: #FFFFFF !important;
+            border-color: #FFFFFF;
+        }
+
+        /* Flash Messages */
+        .toast-container-custom {
+            position: fixed;
+            top: 75px;
+            right: 25px;
+            z-index: 1080;
+        }
+
+        /* Footer */
+        .public-footer {
+            background-color: var(--primary-navy);
+            color: #94A3B8;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.92rem;
+        }
+
+        .public-footer h5 {
+            color: #FFFFFF;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+        }
+
+        .public-footer a {
+            color: #94A3B8;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .public-footer a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-social-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #FFFFFF !important;
+            margin-right: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .footer-social-icon:hover {
+            background-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark public-navbar sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <div class="brand-icon-box">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="d-flex flex-column lh-1">
+                    <span class="fs-6 fw-bold">CrimeIntel Analytics</span>
+                    <small class="text-white-50" style="font-size: 0.7rem; letter-spacing: 0.05em;">DATA & PREDICTION SYSTEM</small>
+                </div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav" aria-controls="publicNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="publicNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/about' in request.path %}active{% endif %}" href="/about/">About System</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/contact' in request.path %}active{% endif %}" href="/contact/">Contact</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                        <a href="/dashboard/" class="btn btn-glow-blue d-flex align-items-center gap-2">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="/accounts/logout/" class="btn btn-outline-cyan">Logout</a>
+                    {% else %}
+                        <a href="/accounts/login/" class="btn btn-outline-cyan">Log In</a>
+                        <a href="/accounts/register/" class="btn btn-glow-blue">Get Started</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Message Alerts -->
+    {% if messages %}
+    <div class="toast-container-custom">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow-lg border-0 mb-2" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="public-footer py-5">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="brand-icon-box">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <span class="fs-5 fw-bold text-white">Crime Data Analysis</span>
+                    </div>
+                    <p class="text-secondary small leading-relaxed">
+                        An advanced forensic and predictive intelligence system utilizing Web Ontology (OWL/RDF) and Machine Learning models to map, analyze, and forecast crime trends across high-risk locations.
+                    </p>
+                    <div class="mt-3">
+                        <a href="#" class="footer-social-icon" aria-label="Github"><i class="bi bi-github"></i></a>
+                        <a href="#" class="footer-social-icon" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="footer-social-icon" aria-label="Linkedin"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="footer-social-icon" aria-label="Shield"><i class="bi bi-shield-shaded"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about/">About Platform</a></li>
+                        <li><a href="/#features">Key Capabilities</a></li>
+                        <li><a href="/contact/">Contact Us</a></li>
+                        <li><a href="/accounts/login/">Analyst Portal</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5>System Modules</h5>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+                        <li><a href="/dashboard/">Spatial Crime Mapping</a></li>
+                        <li><a href="/dashboard/">Ontology Knowledge Graph</a></li>
+                        <li><a href="/dashboard/">Pattern & Temporal Analysis</a></li>
+                        <li><a href="/dashboard/">Machine Learning Predictions</a></li>
+                        <li><a href="/dashboard/">Automated PDF Reporting</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h5>Contact & Support</h5>
+                    <p class="small text-secondary mb-2">
+                        <i class="bi bi-geo-alt-fill text-info me-2"></i> Forensics & Crime Intelligence Cell
+                    </p>
+                    <p class="small text-secondary mb-2">
+                        <i class="bi bi-envelope-fill text-info me-2"></i> intel-support@crimedb.org
+                    </p>
+                    <p class="small text-secondary mb-3">
+                        <i class="bi bi-telephone-fill text-info me-2"></i> +1 (800) 555-CRIME-SYS
+                    </p>
+                    <span class="badge bg-secondary-subtle text-cyan border border-info border-opacity-25 py-2 px-3">
+                        <i class="bi bi-shield-lock me-1"></i> CJIS & ISO 27001 Compliant
+                    </span>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25 my-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 small text-secondary">
+                <div>
+                    &copy; {% now "Y" %} Crime Data Analysis & Prediction System. All Rights Reserved.
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Security Protocol</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

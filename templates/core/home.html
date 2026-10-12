@@ -1,0 +1,607 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Crime Data Analysis & Prediction System | Intelligence Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Network Background Animation */
+    .hero-section {
+        position: relative;
+        min-height: calc(100vh - 75px);
+        background: radial-gradient(circle at 80% 20%, #102B52 0%, #071B3A 70%, #030B18 100%);
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        color: #FFFFFF;
+        padding: 5rem 0;
+    }
+
+    /* CSS Animated Network Grid */
+    .network-nodes-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle, rgba(32, 213, 245, 0.25) 1.5px, transparent 1.5px),
+            radial-gradient(circle, rgba(23, 105, 255, 0.2) 2px, transparent 2px);
+        background-size: 50px 50px, 90px 90px;
+        background-position: 0 0, 25px 25px;
+        opacity: 0.6;
+        animation: networkDrift 45s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes networkDrift {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(1deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+
+    .hero-glow-blob {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        filter: blur(120px);
+        pointer-events: none;
+    }
+
+    .glow-blob-blue {
+        top: 10%;
+        right: 5%;
+        background: rgba(23, 105, 255, 0.25);
+    }
+
+    .glow-blob-cyan {
+        bottom: 5%;
+        left: 10%;
+        background: rgba(32, 213, 245, 0.18);
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(32, 213, 245, 0.1);
+        border: 1px solid rgba(32, 213, 245, 0.35);
+        color: var(--accent-cyan);
+        padding: 0.45rem 1rem;
+        border-radius: 50px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 20px rgba(32, 213, 245, 0.15);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-title-highlight {
+        background: linear-gradient(135deg, #FFFFFF 30%, #20D5F5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #94A3B8;
+        max-width: 620px;
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .scroll-indicator:hover {
+        color: var(--accent-cyan);
+    }
+    .scroll-indicator i {
+        font-size: 1.5rem;
+        animation: bounceDown 1.8s infinite;
+    }
+    @keyframes bounceDown {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(8px); }
+        60% { transform: translateY(4px); }
+    }
+
+    /* Stats Section */
+    .stats-bar-section {
+        background-color: #0B2246;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 2.75rem 0;
+    }
+
+    .stat-counter-number {
+        font-size: 2.85rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1;
+        letter-spacing: -0.02em;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 18px;
+        padding: 2.25rem;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--accent-cyan));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 35px rgba(7, 27, 58, 0.08);
+        border-color: #CBD5E1;
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-icon-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(23, 105, 255, 0.1), rgba(32, 213, 245, 0.15));
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.85rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon-circle {
+        transform: scale(1.08) rotate(3deg);
+        background: linear-gradient(135deg, var(--primary-blue), #20D5F5);
+        color: #FFFFFF;
+    }
+
+    /* Workflow Step Connector */
+    .step-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        height: 100%;
+        z-index: 2;
+    }
+
+    .step-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--primary-navy);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem;
+        border: 3px solid #E2E8F0;
+    }
+
+    .steps-row-connector {
+        position: relative;
+    }
+
+    @media (min-width: 992px) {
+        .steps-row-connector::before {
+            content: '';
+            position: absolute;
+            top: 48px;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: dashed 2px #CBD5E1;
+            z-index: 1;
+        }
+    }
+
+    /* Tech Stack Badges */
+    .tech-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        padding: 0.75rem 1.35rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        transition: all 0.2s;
+    }
+
+    .tech-pill:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        box-shadow: 0 8px 18px rgba(23, 105, 255, 0.12);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.35rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 1. Spectacular Hero Section -->
+<section class="hero-section">
+    <div class="network-nodes-bg"></div>
+    <div class="hero-glow-blob glow-blob-blue"></div>
+    <div class="hero-glow-blob glow-blob-cyan"></div>
+
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-badge">
+                    <i class="bi bi-cpu-fill"></i> POWERED BY ONTOLOGY &amp; MACHINE LEARNING
+                </div>
+                <h1 class="hero-title">
+                    <span class="hero-title-highlight">Crime Data Analysis</span><br>
+                    &amp; Predictive Intelligence
+                </h1>
+                <p class="hero-subtitle">
+                    Transforming raw incident logs into actionable forensic intelligence. Using Web Ontology (OWL/RDF) and ensemble machine learning algorithms for proactive crime mapping and hotspot forecasting.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/accounts/login/" class="btn btn-glow-blue px-4 py-3 fs-6 d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-shield-lock-fill"></i> Get Started
+                    </a>
+                    <a href="#features" class="btn btn-outline-cyan px-4 py-3 fs-6 d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-compass"></i> Explore Analytics
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom border-secondary border-opacity-25 mb-3">
+                        <span class="fw-semibold text-info small"><i class="bi bi-activity"></i> Live Intelligence Feed</span>
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-white-50">Ontology Knowledge Model</small>
+                        <div class="progress mt-1" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-white-50">Pattern Recognition Accuracy</small>
+                        <div class="progress mt-1" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: 94%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-white-50">Predictive Hotspot Coverage</small>
+                        <div class="progress mt-1" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: 88%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animated Scroll Down Arrow -->
+    <a href="#stats" class="scroll-indicator">
+        <span class="small mb-1" style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;">Scroll</span>
+        <i class="bi bi-chevron-down"></i>
+    </a>
+</section>
+
+<!-- 2. Animated Stats Bar -->
+<section id="stats" class="stats-bar-section">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-lg-3">
+                <div class="stat-counter-number counter" data-target="{{ total_records|default:'12480' }}">0</div>
+                <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Total Records Analyzed</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-counter-number counter text-cyan" style="color: #20D5F5;" data-target="{{ total_categories|default:'28' }}">0</div>
+                <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Crime Categories</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-counter-number counter text-warning" data-target="{{ total_locations|default:'145' }}">0</div>
+                <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Locations Covered</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-counter-number counter text-success" data-target="{{ total_predictions|default:'3620' }}">0</div>
+                <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Predictions Made</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Features Section -->
+<section id="features" class="py-5" style="background-color: var(--bg-color);">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill uppercase mb-2">Core Capabilities</span>
+            <h2 class="fw-bold text-navy display-6 mt-2">Powerful Crime Analytics Platform</h2>
+            <p class="text-muted">A unified end-to-end suite bridging semantic ontologies and predictive machine learning architectures.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="feature-icon-circle">
+                        <i class="bi bi-bar-chart-line"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Crime Data Analysis</h5>
+                    <p class="text-muted small mb-0">
+                        Upload CSV/Excel crime logs, run data quality audits, aggregate trends by temporal periods, severity index, and jurisdiction.
+                    </p>
+                </div>
+            </div>
+            <!-- Feature 2 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="feature-icon-circle">
+                        <i class="bi bi-share"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Ontology Integration</h5>
+                    <p class="text-muted small mb-0">
+                        Map relationships between suspects, crime categories, weapons, and locations using Web Ontology (OWL/RDF) and SPARQL queries.
+                    </p>
+                </div>
+            </div>
+            <!-- Feature 3 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="feature-icon-circle">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Trend Prediction</h5>
+                    <p class="text-muted small mb-0">
+                        Forecast future crime frequencies with Scikit-learn regressors, evaluating R² metrics, RMSE, and confidence intervals.
+                    </p>
+                </div>
+            </div>
+            <!-- Feature 4 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="feature-icon-circle">
+                        <i class="bi bi-pie-chart"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Data Visualization</h5>
+                    <p class="text-muted small mb-0">
+                        Interactive geospatial Leaflet maps, heatmaps, D3 force graph diagrams, and dynamic Chart.js frequency visualizations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. How It Works Section -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-info bg-opacity-10 text-info fw-bold px-3 py-2 rounded-pill uppercase mb-2">Intelligence Pipeline</span>
+            <h2 class="fw-bold text-navy display-6 mt-2">How It Works</h2>
+            <p class="text-muted">From raw police incident reports to proactive community safety forecasts in four systematic steps.</p>
+        </div>
+
+        <div class="row g-4 steps-row-connector">
+            <div class="col-md-6 col-lg-3">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h6 class="fw-bold mb-2">Upload Data</h6>
+                    <p class="text-muted small mb-0">Ingest structured CSV or Excel records with automatic sanitization and schema verification.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h6 class="fw-bold mb-2">Analyze Patterns</h6>
+                    <p class="text-muted small mb-0">Detect temporal peak hours, recurring crime waves, and spatial hotspot densities.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h6 class="fw-bold mb-2">Build Ontology</h6>
+                    <p class="text-muted small mb-0">Generate semantic triples and hierarchical taxonomies to uncover hidden crime correlations.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h6 class="fw-bold mb-2">Predict Trends</h6>
+                    <p class="text-muted small mb-0">Train predictive algorithms to project future incident volumes and guide patrols.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 5. Technology Stack Section -->
+<section class="py-5" style="background-color: var(--bg-color);">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-bold px-3 py-2 rounded-pill uppercase mb-2">Enterprise Architecture</span>
+            <h2 class="fw-bold text-navy display-6 mt-2">Built With Cutting-Edge Technologies</h2>
+            <p class="text-muted">Engineered on a rock-solid, production-grade technology foundation for reliability and high throughput.</p>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <div class="tech-pill"><i class="bi bi-filetype-py text-primary fs-5"></i> Python 3.10+</div>
+            <div class="tech-pill"><i class="bi bi-code-slash text-success fs-5"></i> Django 4.2 Framework</div>
+            <div class="tech-pill"><i class="bi bi-database text-warning fs-5"></i> MySQL Database</div>
+            <div class="tech-pill"><i class="bi bi-cpu text-info fs-5"></i> Scikit-Learn</div>
+            <div class="tech-pill"><i class="bi bi-diagram-3-fill text-danger fs-5"></i> RDFLib / OWL Ontology</div>
+            <div class="tech-pill"><i class="bi bi-bar-chart-fill text-primary fs-5"></i> Chart.js</div>
+            <div class="tech-pill"><i class="bi bi-map-fill text-success fs-5"></i> Leaflet.js GIS</div>
+            <div class="tech-pill"><i class="bi bi-bootstrap-fill text-primary fs-5"></i> Bootstrap 5</div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. Project Overview & Objectives -->
+<section class="py-5 bg-white border-top">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill uppercase mb-2">Platform Overview</span>
+                <h3 class="fw-bold text-navy mb-3">Smarter, Semantic-Driven Crime Analysis</h3>
+                <p class="text-muted leading-relaxed mb-4">
+                    Traditional crime analysis tools rely strictly on flat tabular statistics that fail to capture semantic relationships between criminal behaviors, socio-economic factors, and urban spaces. This system blends <strong>semantic web ontologies</strong> with <strong>predictive machine learning models</strong> to empower intelligence analysts and public safety authorities.
+                </p>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Knowledge Representation with Ontology</h6>
+                            <p class="text-muted small mb-0">Captures semantic relationships and contextual knowledge beyond flat databases.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Predictive Analytics &amp; Forecasting</h6>
+                            <p class="text-muted small mb-0">Enables law enforcement agencies to anticipate emerging crime hotspots and deploy resources efficiently.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Comprehensive Automated Reporting</h6>
+                            <p class="text-muted small mb-0">Instant generation of executive PDF and spreadsheet analytical briefings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="p-4 rounded-4 shadow-sm bg-light border">
+                    <h5 class="fw-bold text-navy mb-3"><i class="bi bi-shield-shaded text-primary me-2"></i>Key Project Objectives</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-transparent px-0 py-3 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-arrow-right-short text-primary"></i> Automate Crime Record Ingestion</span>
+                            <span class="badge bg-primary-subtle text-primary">Automated</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0 py-3 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-arrow-right-short text-primary"></i> Spatial &amp; Temporal Pattern Detection</span>
+                            <span class="badge bg-info-subtle text-info">Real-Time</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0 py-3 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-arrow-right-short text-primary"></i> Ontology Semantic Triples &amp; SPARQL</span>
+                            <span class="badge bg-warning-subtle text-warning">Semantic</span>
+                        </li>
+                        <li class="list-group-item bg-transparent px-0 py-3 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-arrow-right-short text-primary"></i> Machine Learning Hotspot Predictions</span>
+                            <span class="badge bg-success-subtle text-success">Predictive</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7. Call To Action (CTA) -->
+<section class="py-5" style="background: radial-gradient(circle at 50% 50%, #102B52, #071B3A); color: #FFFFFF;">
+    <div class="container py-5 text-center">
+        <h2 class="display-6 fw-bold mb-3">Ready to Deploy Predictive Crime Intelligence?</h2>
+        <p class="text-light opacity-75 max-w-700 mx-auto mb-4 fs-6">
+            Access forensic modules, investigate pattern nodes, and run predictive forecasting algorithms directly from your analyst dashboard.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="/accounts/login/" class="btn btn-glow-blue px-4 py-3 fs-6">
+                Access Analyst Dashboard
+            </a>
+            <a href="/about/" class="btn btn-outline-cyan px-4 py-3 fs-6">
+                Learn About System
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animated Counters with Intersection Observer
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".counter");
+        let hasAnimated = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !hasAnimated) {
+                    hasAnimated = true;
+                    counters.forEach(counter => {
+                        const target = +counter.getAttribute("data-target");
+                        const duration = 2000;
+                        const increment = target / (duration / 25);
+                        let current = 0;
+
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.innerText = Math.ceil(current).toLocaleString();
+                                setTimeout(updateCounter, 25);
+                            } else {
+                                counter.innerText = target.toLocaleString();
+                            }
+                        };
+                        updateCounter();
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        const statsSection = document.getElementById("stats");
+        if(statsSection) {
+            observer.observe(statsSection);
+        }
+    });
+</script>
+{% endblock %}

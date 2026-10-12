@@ -1,0 +1,265 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Geospatial Location Analysis | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Geospatial Crime Mapping &amp; Hotspot Clusters{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container-wrapper {
+        height: 600px;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid #E2E8F0;
+        position: relative;
+    }
+    #crimeMap {
+        height: 100%;
+        width: 100%;
+    }
+    .map-legend {
+        position: absolute;
+        bottom: 25px;
+        right: 25px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        padding: 0.85rem 1.15rem;
+        border-radius: 10px;
+        border: 1px solid #CBD5E1;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        font-size: 0.8rem;
+    }
+    .legend-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4 mb-4">
+        <!-- Interactive Leaflet Map Main Area -->
+        <div class="col-lg-8">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Interactive Spatial Distribution Map</h5>
+                        <small class="text-muted">Geocoded incident clusters with severity heat levels</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="resetMapZoom">
+                            <i class="bi bi-arrows-fullscreen me-1"></i> Reset Zoom
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <div class="map-container-wrapper">
+                        <div id="crimeMap"></div>
+                        <div class="map-legend">
+                            <div class="fw-bold mb-2 text-dark">Severity Cluster</div>
+                            <div class="d-flex align-items-center mb-1"><span class="legend-indicator" style="background:#EF4444;"></span> Critical Severity (> 50)</div>
+                            <div class="d-flex align-items-center mb-1"><span class="legend-indicator" style="background:#F59E0B;"></span> Moderate Alert (20 - 50)</div>
+                            <div class="d-flex align-items-center"><span class="legend-indicator" style="background:#16A36A;"></span> Low Density (< 20)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Controls & Top Hotspots Panel -->
+        <div class="col-lg-4">
+            <!-- Filter Parameters -->
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom"><i class="bi bi-funnel text-primary me-2"></i>Map Layer Filters</h5>
+                </div>
+                <div class="card-body p-3">
+                    <form method="GET" action="/location/">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Crime Offense Type</label>
+                            <select name="category" class="form-select form-select-sm">
+                                <option value="">All Offense Types</option>
+                                <option value="theft">Theft &amp; Robbery</option>
+                                <option value="burglary">Burglary</option>
+                                <option value="assault">Violent Assault</option>
+                                <option value="vehicle">Vehicle Theft</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Spatial Region Type</label>
+                            <select name="region_type" class="form-select form-select-sm">
+                                <option value="">All Regions (Urban, Suburban, Rural)</option>
+                                <option value="urban">Urban Downtown Only</option>
+                                <option value="suburban">Suburban Residential</option>
+                                <option value="rural">Rural Outskirts</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary-blue w-100">
+                            Apply Spatial Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Top Critical Hotspots List -->
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom"><i class="bi bi-fire text-danger me-2"></i>Top High-Risk Hotspots</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block text-dark">7th Ave Central Station</span>
+                                <small class="text-muted">Central Ward • Urban</small>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger fs-6">142 Cases</span>
+                        </li>
+                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block text-dark">West Industrial Terminal</span>
+                                <small class="text-muted">North Ward • Industrial</small>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger fs-6">98 Cases</span>
+                        </li>
+                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block text-dark">South Highway Junction</span>
+                                <small class="text-muted">South Corridor • Suburban</small>
+                            </div>
+                            <span class="badge bg-warning-subtle text-warning fs-6">76 Cases</span>
+                        </li>
+                        <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold d-block text-dark">Eastern Boulevard Promenade</span>
+                                <small class="text-muted">East Ward • Urban</small>
+                            </div>
+                            <span class="badge bg-warning-subtle text-warning fs-6">64 Cases</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Statistics Table Below Map -->
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom">Jurisdiction Incident Statistics Breakdown</h5>
+            <span class="badge bg-light text-dark border">142 Jurisdictions Indexed</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th class="ps-4">Jurisdiction Name</th>
+                            <th>City / State</th>
+                            <th>GPS Coordinates</th>
+                            <th>Region Type</th>
+                            <th>Reported Cases</th>
+                            <th>Risk Tier</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if location_stats %}
+                            {% for loc in location_stats %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">{{ loc.name }}</td>
+                                <td>{{ loc.city }}, {{ loc.state }}</td>
+                                <td><code>{{ loc.latitude }}, {{ loc.longitude }}</code></td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">{{ loc.region_type|title }}</span></td>
+                                <td class="fw-bold text-navy">{{ loc.incident_count }}</td>
+                                <td>
+                                    <span class="badge bg-danger-subtle text-danger">High Risk</span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="/crime-data/?location={{ loc.id }}" class="btn btn-sm btn-outline-primary py-0">View Cases</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">7th Ave Central Station</td>
+                                <td>Metro City, State</td>
+                                <td><code>28.6139, 77.2090</code></td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">Urban</span></td>
+                                <td class="fw-bold text-navy">142</td>
+                                <td><span class="badge bg-danger">Critical</span></td>
+                                <td class="pe-4 text-end"><a href="/crime-data/" class="btn btn-sm btn-outline-primary py-0">View Cases</a></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-semibold">West Industrial Terminal</td>
+                                <td>Metro City, State</td>
+                                <td><code>28.6502, 77.2300</code></td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">Industrial</span></td>
+                                <td class="fw-bold text-navy">98</td>
+                                <td><span class="badge bg-danger-subtle text-danger">High</span></td>
+                                <td class="pe-4 text-end"><a href="/crime-data/" class="btn btn-sm btn-outline-primary py-0">View Cases</a></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-semibold">South Highway Junction</td>
+                                <td>Metro City, State</td>
+                                <td><code>28.5800, 77.1800</code></td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">Suburban</span></td>
+                                <td class="fw-bold text-navy">76</td>
+                                <td><span class="badge bg-warning-subtle text-warning">Medium</span></td>
+                                <td class="pe-4 text-end"><a href="/crime-data/" class="btn btn-sm btn-outline-primary py-0">View Cases</a></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialize Leaflet Map
+        const map = L.map('crimeMap').setView([28.6139, 77.2090], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Sample Hotspot Coordinates & Markers
+        const hotspots = [
+            { lat: 28.6139, lng: 77.2090, name: '7th Ave Central Station', count: 142, color: '#EF4444' },
+            { lat: 28.6502, lng: 77.2300, name: 'West Industrial Terminal', count: 98, color: '#EF4444' },
+            { lat: 28.5800, lng: 77.1800, name: 'South Highway Junction', count: 76, color: '#F59E0B' },
+            { lat: 28.6288, lng: 77.2412, name: 'Eastern Boulevard Promenade', count: 64, color: '#F59E0B' },
+            { lat: 28.6015, lng: 77.1950, name: 'Commercial Bank Sector 4', count: 18, color: '#16A36A' }
+        ];
+
+        hotspots.forEach(spot => {
+            const circle = L.circleMarker([spot.lat, spot.lng], {
+                color: spot.color,
+                fillColor: spot.color,
+                fillOpacity: 0.6,
+                radius: Math.min(22, Math.max(8, spot.count / 6))
+            }).addTo(map);
+
+            circle.bindPopup(`
+                <div style="font-family: 'Inter', sans-serif;">
+                    <strong style="color: #071B3A; font-size: 0.95rem;">${spot.name}</strong><br>
+                    <span style="color: #64748B; font-size: 0.8rem;">Reported Incidents: <b>${spot.count}</b></span><br>
+                    <a href="/crime-data/" style="color: #1769FF; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Audit Hotspot Logs &rarr;</a>
+                </div>
+            `);
+        });
+
+        document.getElementById('resetMapZoom').addEventListener('click', () => {
+            map.setView([28.6139, 77.2090], 12);
+        });
+    });
+</script>
+{% endblock %}

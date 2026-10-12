@@ -1,0 +1,250 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Analyst Profile | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Analyst Profile &amp; Account Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Messages Alert -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Profile Header Card (Left Column) -->
+        <div class="col-lg-4">
+            <div class="card card-custom text-center p-4">
+                <!-- Avatar placeholder: large circle with user initials -->
+                <div class="avatar-circle mx-auto mb-3" style="width: 90px; height: 90px; font-size: 2.2rem; border-width: 3px;">
+                    {{ user.get_initials|default:"AN" }}
+                </div>
+                <h5 class="fw-bold text-dark mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted small mb-2">@{{ user.username }}</p>
+
+                <!-- Role Badge -->
+                <div class="mb-3">
+                    <span class="badge {% if user.role == 'admin' %}bg-danger-subtle text-danger border border-danger border-opacity-25{% elif user.role == 'analyst' %}bg-primary-subtle text-primary border border-primary border-opacity-25{% else %}bg-secondary-subtle text-secondary border border-secondary border-opacity-25{% endif %} px-3 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.05em;">
+                        <i class="bi bi-shield-check me-1"></i> {{ user.get_role_display|default:"Crime Analyst" }}
+                    </span>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 text-start small mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Account Status:</span>
+                        <span class="badge bg-success-subtle text-success">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Email Verified:</span>
+                        <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Verified</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Member Since:</span>
+                        <span class="fw-semibold text-dark">{{ user.date_joined|date:"M d, Y"|default:"Recently" }}</span>
+                    </div>
+                </div>
+
+                <div class="text-muted small text-start">
+                    <i class="bi bi-info-circle me-1"></i> Profile permissions and forensic access level are governed by agency administrator policies.
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content with Tab Navigation (Right Column) -->
+        <div class="col-lg-8">
+            <div class="card card-custom">
+                <!-- Tab Navigation -->
+                <div class="card-header bg-white border-bottom p-0">
+                    <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-2" id="profileTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-semibold text-dark py-3 px-4 border-0 border-bottom border-primary border-3" id="profile-info-tab" data-bs-toggle="tab" data-bs-target="#profile-info" type="button" role="tab" aria-controls="profile-info" aria-selected="true">
+                                <i class="bi bi-person me-2 text-primary"></i> Profile Info
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold text-secondary py-3 px-4 border-0" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-pane" type="button" role="tab" aria-controls="password-pane" aria-selected="false">
+                                <i class="bi bi-shield-lock me-2 text-primary"></i> Change Password
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold text-secondary py-3 px-4 border-0" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-pane" type="button" role="tab" aria-controls="notifications-pane" aria-selected="false">
+                                <i class="bi bi-bell me-2 text-primary"></i> Notification Settings
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="tab-content" id="profileTabContent">
+                        <!-- TAB 1: Profile Info -->
+                        <div class="tab-pane fade show active" id="profile-info" role="tabpanel" aria-labelledby="profile-info-tab">
+                            <form method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="first_name" class="form-label small fw-semibold text-secondary">First Name</label>
+                                        <input type="text" name="first_name" id="first_name" class="form-control" value="{{ user.first_name }}" placeholder="First Name">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="last_name" class="form-label small fw-semibold text-secondary">Last Name</label>
+                                        <input type="text" name="last_name" id="last_name" class="form-control" value="{{ user.last_name }}" placeholder="Last Name">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label small fw-semibold text-secondary">Official Email Address</label>
+                                        <input type="email" name="email" id="email" class="form-control" value="{{ user.email }}" placeholder="analyst@agency.gov" readonly>
+                                        <div class="form-text small text-muted">Email address can only be changed by system administrators.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label small fw-semibold text-secondary">Phone Number</label>
+                                        <input type="text" name="phone" id="phone" class="form-control" value="{{ user.phone }}" placeholder="+1 (555) 000-0000">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="organization" class="form-label small fw-semibold text-secondary">Organization / Police Department</label>
+                                    <input type="text" name="organization" id="organization" class="form-control" value="{{ user.organization }}" placeholder="e.g. Central Metro Police Dept, Forensic Intelligence Div">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="bio" class="form-label small fw-semibold text-secondary">Professional Bio / Mission Notes</label>
+                                    <textarea name="bio" id="bio" rows="4" class="form-control" placeholder="Brief professional notes, assigned precincts, or forensic specialties...">{{ user.bio }}</textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary-blue px-4 py-2">
+                                        <i class="bi bi-check2-circle me-1"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 2: Change Password -->
+                        <div class="tab-pane fade" id="password-pane" role="tabpanel" aria-labelledby="password-tab">
+                            <form method="POST" action="{% url 'accounts:profile' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="old_password" class="form-label small fw-semibold text-secondary">Current Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
+                                        <input type="password" name="old_password" id="old_password" class="form-control" placeholder="Enter current account password">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="new_password1" class="form-label small fw-semibold text-secondary">New Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                                            <input type="password" name="new_password1" id="new_password1" class="form-control" placeholder="Create new strong password">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="new_password2" class="form-label small fw-semibold text-secondary">Confirm New Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                                            <input type="password" name="new_password2" id="new_password2" class="form-control" placeholder="Re-enter new password">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-light rounded-3 small text-muted mb-4">
+                                    <strong class="text-dark d-block mb-1">Security Standard:</strong>
+                                    Use at least 8 characters with a mix of uppercase letters, numbers, and special symbols for law enforcement compliance.
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary-blue px-4 py-2">
+                                        <i class="bi bi-shield-check me-1"></i> Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 3: Notification Settings -->
+                        <div class="tab-pane fade" id="notifications-pane" role="tabpanel" aria-labelledby="notifications-tab">
+                            <form method="POST" action="{% url 'accounts:settings' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="email" value="{{ user.email }}">
+                                <input type="hidden" name="phone" value="{{ user.phone }}">
+                                <input type="hidden" name="organization" value="{{ user.organization }}">
+
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light mb-3">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1">Email Notifications</h6>
+                                            <small class="text-muted">Receive vital operational summaries and system security messages via registered email.</small>
+                                        </div>
+                                        <div class="form-check form-switch fs-4">
+                                            <input class="form-check-input" type="checkbox" name="email_notifications" id="email_notifications" {% if user.email_notifications %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h6 class="fw-bold text-dark mb-3">Category-Specific Alert Toggles</h6>
+                                <div class="d-flex flex-column gap-3 mb-4">
+                                    <div class="d-flex align-items-center justify-content-between border-bottom pb-3">
+                                        <div>
+                                            <span class="fw-semibold text-dark d-block">Dataset Upload &amp; Ingestion Alerts</span>
+                                            <small class="text-muted">Notifications upon CSV parsing completion and schema validation summaries.</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="notif_upload" checked>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between border-bottom pb-3">
+                                        <div>
+                                            <span class="fw-semibold text-dark d-block">ML Model Training Updates</span>
+                                            <small class="text-muted">Alerts when background model training achieves benchmark R² metrics.</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="notif_training" checked>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between border-bottom pb-3">
+                                        <div>
+                                            <span class="fw-semibold text-dark d-block">Critical Crime Hotspot Surge</span>
+                                            <small class="text-muted">High-priority alerts when spatial incident density exceeds threshold.</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="notif_hotspot" checked>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="fw-semibold text-dark d-block">Generated Report Ready</span>
+                                            <small class="text-muted">Instant alert when executive PDF / CSV dossier compilations are ready for download.</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="notif_report" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary-blue px-4 py-2">
+                                        <i class="bi bi-save me-1"></i> Save Notification Preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

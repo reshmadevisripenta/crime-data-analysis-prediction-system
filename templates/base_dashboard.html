@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Dashboard | Crime Data Analysis & Prediction System{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        :root {
+            --primary-navy: #071B3A;
+            --secondary-navy: #102B52;
+            --primary-blue: #1769FF;
+            --accent-cyan: #20D5F5;
+            --bg-color: #F4F7FC;
+            --card-bg: #FFFFFF;
+            --text-color: #1C2940;
+            --text-muted: #64748B;
+            --success-color: #16A36A;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6, .brand-font {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #071B3A 0%, #0B2246 100%);
+            color: #E2E8F0;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 4px 0 24px rgba(7, 27, 58, 0.15);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .brand-icon-box {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1769FF, #20D5F5);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(23, 105, 255, 0.4);
+        }
+
+        .user-profile-badge {
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .avatar-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #102B52, #1769FF);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 2px 8px rgba(32, 213, 245, 0.25);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0.85rem;
+            flex-grow: 1;
+        }
+
+        .nav-section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748B;
+            padding: 0.85rem 0.75rem 0.35rem;
+        }
+
+        .nav-sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.65rem 0.85rem;
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .nav-sidebar-link i {
+            font-size: 1.15rem;
+            margin-right: 0.85rem;
+            transition: transform 0.2s ease;
+            color: #64748B;
+        }
+
+        .nav-sidebar-link:hover {
+            color: #FFFFFF;
+            background-color: rgba(23, 105, 255, 0.12);
+        }
+
+        .nav-sidebar-link:hover i {
+            color: var(--accent-cyan);
+            transform: translateX(2px);
+        }
+
+        .nav-sidebar-link.active {
+            color: #FFFFFF;
+            background: linear-gradient(90deg, rgba(23, 105, 255, 0.25), rgba(32, 213, 245, 0.12));
+            font-weight: 600;
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .nav-sidebar-link.active i {
+            color: var(--accent-cyan);
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            background-color: var(--primary-blue);
+            color: #FFFFFF;
+        }
+
+        /* Main Content Wrapper */
+        .dashboard-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Topbar Header */
+        .topbar {
+            height: 70px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .topbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .topbar-action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F1F5F9;
+            color: var(--secondary-navy);
+            border: none;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .topbar-action-btn:hover {
+            background: #E2E8F0;
+            color: var(--primary-blue);
+        }
+
+        .notification-indicator {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            box-shadow: 0 0 0 2px #FFFFFF;
+        }
+
+        /* Content Area */
+        .dashboard-content {
+            padding: 1.75rem;
+            flex-grow: 1;
+        }
+
+        /* Card System Styling */
+        .card-custom {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .card-custom:hover {
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+        }
+
+        .card-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #F1F5F9;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title-custom {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin: 0;
+        }
+
+        .btn-primary-blue {
+            background-color: var(--primary-blue);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.55rem 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-blue:hover {
+            background-color: #0d57e0;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(23, 105, 255, 0.3);
+        }
+
+        /* Mobile Overlay and Toggles */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(7, 27, 58, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1040;
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .dashboard-wrapper {
+                margin-left: 0;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+        <!-- Brand Logo Header -->
+        <div class="sidebar-header d-flex align-items-center justify-content-between">
+            <a href="/dashboard/" class="d-flex align-items-center gap-2 text-decoration-none">
+                <div class="brand-icon-box">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="d-flex flex-column lh-1">
+                    <span class="fs-6 fw-bold text-white">CrimeIntel</span>
+                    <small class="text-info fw-semibold" style="font-size: 0.68rem; letter-spacing: 0.06em;">PREDICTION AI</small>
+                </div>
+            </a>
+            <button class="btn btn-sm btn-link text-white-50 d-lg-none" id="sidebarCloseBtn">
+                <i class="bi bi-x-lg fs-5"></i>
+            </button>
+        </div>
+
+        <!-- User Profile Quick Info -->
+        <div class="user-profile-badge d-flex align-items-center gap-3">
+            <div class="avatar-circle">
+                {% if user.first_name %}
+                    {{ user.first_name|first|upper }}
+                {% elif user.username %}
+                    {{ user.username|first|upper }}
+                {% else %}
+                    A
+                {% endif %}
+            </div>
+            <div class="d-flex flex-column lh-sm overflow-hidden">
+                <span class="text-white fw-semibold text-truncate small">
+                    {% if user.get_full_name %}
+                        {{ user.get_full_name }}
+                    {% else %}
+                        {{ user.username|default:"Forensic Analyst" }}
+                    {% endif %}
+                </span>
+                <div class="mt-1">
+                    <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25" style="font-size: 0.68rem;">
+                        {{ user.get_role_display|default:"Lead Analyst" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-nav">
+            <!-- Section: MAIN -->
+            <div class="nav-section-label">MAIN</div>
+            <a href="/dashboard/" class="nav-sidebar-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- Section: DATA MANAGEMENT -->
+            <div class="nav-section-label">DATA MANAGEMENT</div>
+            <a href="/crime-data/" class="nav-sidebar-link {% if '/crime-data/' in request.path and not '/upload' in request.path %}active{% endif %}">
+                <i class="bi bi-database"></i>
+                <span>Crime Data</span>
+            </a>
+            <a href="/crime-data/upload/" class="nav-sidebar-link {% if '/crime-data/upload/' in request.path %}active{% endif %}">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>Upload Dataset</span>
+            </a>
+
+            <!-- Section: ANALYSIS & INTELLIGENCE -->
+            <div class="nav-section-label">ANALYSIS</div>
+            <a href="/analysis/" class="nav-sidebar-link {% if '/analysis/' in request.path %}active{% endif %}">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Data Analysis</span>
+            </a>
+            <a href="/location/" class="nav-sidebar-link {% if '/location/' in request.path %}active{% endif %}">
+                <i class="bi bi-geo-alt"></i>
+                <span>Location Analysis</span>
+            </a>
+            <a href="/patterns/" class="nav-sidebar-link {% if '/patterns/' in request.path %}active{% endif %}">
+                <i class="bi bi-diagram-3"></i>
+                <span>Crime Patterns</span>
+            </a>
+            <a href="/ontology/" class="nav-sidebar-link {% if '/ontology/' in request.path %}active{% endif %}">
+                <i class="bi bi-share"></i>
+                <span>Ontology Explorer</span>
+            </a>
+
+            <!-- Section: ML & PREDICTION -->
+            <div class="nav-section-label">ML & PREDICTION</div>
+            <a href="/model-training/" class="nav-sidebar-link {% if '/model-training/' in request.path %}active{% endif %}">
+                <i class="bi bi-cpu"></i>
+                <span>Model Training</span>
+            </a>
+            <a href="/prediction/" class="nav-sidebar-link {% if '/prediction/' in request.path %}active{% endif %}">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Crime Prediction</span>
+            </a>
+            <a href="/visualization/" class="nav-sidebar-link {% if '/visualization/' in request.path %}active{% endif %}">
+                <i class="bi bi-pie-chart"></i>
+                <span>Data Visualization</span>
+            </a>
+
+            <!-- Section: SYSTEM -->
+            <div class="nav-section-label">SYSTEM</div>
+            <a href="/reports/" class="nav-sidebar-link {% if '/reports/' in request.path %}active{% endif %}">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Reports</span>
+            </a>
+            <a href="/notifications/" class="nav-sidebar-link {% if '/notifications/' in request.path %}active{% endif %}">
+                <i class="bi bi-bell"></i>
+                <span>Notifications</span>
+                {% if unread_notifications_count %}
+                    <span class="nav-badge">{{ unread_notifications_count }}</span>
+                {% else %}
+                    <span class="nav-badge">3</span>
+                {% endif %}
+            </a>
+            <a href="/accounts/profile/" class="nav-sidebar-link {% if '/accounts/profile/' in request.path %}active{% endif %}">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+            <a href="/accounts/settings/" class="nav-sidebar-link {% if '/accounts/settings/' in request.path %}active{% endif %}">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+            <a href="/accounts/logout/" class="nav-sidebar-link text-danger mt-2">
+                <i class="bi bi-box-arrow-right text-danger"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Workspace Area -->
+    <div class="dashboard-wrapper">
+        <!-- Topbar Navigation -->
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="topbar-action-btn d-lg-none" id="sidebarToggleBtn" aria-label="Toggle navigation">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <h1 class="topbar-title">{% block page_title %}Operational Intelligence Center{% endblock %}</h1>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <!-- System Status Indicator -->
+                <div class="d-none d-md-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border">
+                    <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
+                    <small class="text-muted fw-semibold">Model Status: Active</small>
+                </div>
+
+                <!-- Notification Bell -->
+                <a href="/notifications/" class="topbar-action-btn" title="View Notifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-indicator"></span>
+                </a>
+
+                <!-- User Dropdown Menu -->
+                <div class="dropdown">
+                    <button class="btn p-0 border-0 d-flex align-items-center gap-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-circle" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                            {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}A{% endif %}
+                        </div>
+                        <div class="d-none d-sm-flex flex-column text-start lh-1">
+                            <span class="small fw-bold text-dark">{{ user.username|default:"Analyst" }}</span>
+                            <small class="text-muted" style="font-size: 0.72rem;">{{ user.role|default:"Analyst"|title }}</small>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 py-2" style="border-radius: 10px; min-width: 200px;">
+                        <li><h6 class="dropdown-header text-uppercase small fw-bold">Signed in as {{ user.username|default:"Analyst" }}</h6></li>
+                        <li><a class="dropdown-item py-2" href="/accounts/profile/"><i class="bi bi-person me-2 text-primary"></i> My Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="/accounts/settings/"><i class="bi bi-gear me-2 text-secondary"></i> System Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2 text-danger" href="/accounts/logout/"><i class="bi bi-box-arrow-right me-2"></i> Log Out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Message Alerts -->
+        {% if messages %}
+        <div class="px-4 pt-3">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Specific Main Content -->
+        <main class="dashboard-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Leaflet.js CDN -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- D3.js v7 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Sidebar Mobile Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('appSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const closeBtn = document.getElementById('sidebarCloseBtn');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            }
+
+            if(toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+            if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+            if(overlay) overlay.addEventListener('click', toggleSidebar);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

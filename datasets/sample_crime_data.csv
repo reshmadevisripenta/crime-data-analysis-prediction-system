@@ -1,0 +1,51 @@
+crime_category,incident_date,location,city,severity,description,status
+Theft,2024-01-05,MG Road,Mumbai,medium,Mobile phone snatching near bus stop,solved
+Assault,2024-01-08,Connaught Place,Delhi,high,Physical altercation outside restaurant,under_investigation
+Burglary,2024-01-12,Indiranagar,Bangalore,medium,Residential break-in during daytime,solved
+Fraud,2024-01-15,Banjara Hills,Hyderabad,low,Online banking fraud via phishing,reported
+Vandalism,2024-01-18,FC Road,Pune,low,Graffiti on public property,closed
+Theft,2024-01-22,Park Street,Kolkata,medium,Wallet stolen at crowded market,reported
+Assault,2024-01-25,Anna Salai,Chennai,high,Road rage incident,under_investigation
+Burglary,2024-02-03,Sector 17,Chandigarh,high,Commercial shop burglary,solved
+Fraud,2024-02-07,CG Road,Ahmedabad,medium,Investment fraud scheme,under_investigation
+Theft,2024-02-10,MG Road,Mumbai,low,Bicycle theft from parking area,closed
+Vandalism,2024-02-14,Connaught Place,Delhi,low,Car windshield vandalized,reported
+Assault,2024-02-18,Koramangala,Bangalore,medium,Street fight,solved
+Theft,2024-02-22,Jubilee Hills,Hyderabad,medium,Laptop stolen from cafe,reported
+Burglary,2024-02-26,Kothrud,Pune,high,Night-time residential burglary,under_investigation
+Fraud,2024-03-01,Salt Lake,Kolkata,high,Job offer fraud,reported
+Assault,2024-03-05,T Nagar,Chennai,medium,Domestic dispute turned violent,under_investigation
+Theft,2024-03-09,Sector 22,Chandigarh,low,Shoplifting at mall,closed
+Vandalism,2024-03-13,Navrangpura,Ahmedabad,medium,Public bus damage,reported
+Burglary,2024-03-18,Andheri,Mumbai,high,Jewellery store break-in,under_investigation
+Fraud,2024-03-22,Lajpat Nagar,Delhi,medium,Credit card skimming at ATM,reported
+Theft,2024-03-26,Whitefield,Bangalore,medium,Car break-in,solved
+Assault,2024-04-01,Madhapur,Hyderabad,high,Bar brawl,solved
+Burglary,2024-04-05,Shivaji Nagar,Pune,medium,Office supplies theft,reported
+Vandalism,2024-04-09,New Town,Kolkata,low,Street light damage,closed
+Theft,2024-04-13,Egmore,Chennai,medium,Chain snatching,under_investigation
+Fraud,2024-04-17,Panchkula,Chandigarh,low,Fake charity collection,reported
+Assault,2024-04-21,Satellite,Ahmedabad,medium,School fight,solved
+Burglary,2024-04-25,Dadar,Mumbai,high,Apartment break-in,under_investigation
+Theft,2024-04-29,Saket,Delhi,low,Pocket picking in metro,closed
+Vandalism,2024-05-03,Electronic City,Bangalore,medium,Property damage at construction site,reported
+Fraud,2024-05-07,Secunderabad,Hyderabad,high,Property document fraud,under_investigation
+Assault,2024-05-11,Khadki,Pune,high,Gang fight,solved
+Burglary,2024-05-15,Behala,Kolkata,medium,Night-time shop break-in,reported
+Theft,2024-05-19,Velachery,Chennai,low,Bicycle stolen,closed
+Fraud,2024-05-23,Manimajra,Chandigarh,medium,Online shopping fraud,reported
+Vandalism,2024-05-27,Bopal,Ahmedabad,low,Signboard damage,closed
+Assault,2024-06-01,Kurla,Mumbai,medium,Workplace altercation,under_investigation
+Theft,2024-06-05,Rohini,Delhi,medium,Mobile theft at market,solved
+Burglary,2024-06-09,JP Nagar,Bangalore,high,Residential break-in at night,under_investigation
+Fraud,2024-06-13,Kondapur,Hyderabad,medium,Tech support scam,reported
+Vandalism,2024-06-17,Bibwewadi,Pune,low,Vehicle keying,reported
+Assault,2024-06-21,Tollygunge,Kolkata,high,Road accident altercation,under_investigation
+Theft,2024-06-25,Tambaram,Chennai,medium,Gold chain snatching,reported
+Burglary,2024-06-29,Sector 43,Chandigarh,medium,ATM machine tampering,solved
+Fraud,2024-07-03,Maninagar,Ahmedabad,high,Real estate fraud,under_investigation
+Theft,2024-07-07,Bandra,Mumbai,low,Bag snatching,solved
+Assault,2024-07-11,Dwarka,Delhi,medium,Domestic violence,under_investigation
+Vandalism,2024-07-15,Marathahalli,Bangalore,medium,Bus stop vandalism,reported
+Burglary,2024-07-19,Kukatpally,Hyderabad,high,Commercial burglary,solved
+Fraud,2024-07-23,Aundh,Pune,medium,Phishing attack,reported

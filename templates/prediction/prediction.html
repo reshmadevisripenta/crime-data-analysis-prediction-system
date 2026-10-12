@@ -1,0 +1,219 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Crime Prediction | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Predictive Crime Forecasting &amp; Risk Projection{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4 mb-4">
+        <!-- Prediction Configuration Form Panel -->
+        <div class="col-lg-5">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Forecast Query Parameters</h5>
+                        <small class="text-muted">Target jurisdiction and time horizon</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="/prediction/predict/" id="predictionForm">
+                        {% csrf_token %}
+
+                        <!-- Location Select -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Target Jurisdiction / Hotspot *</label>
+                            <select name="location" class="form-select" required>
+                                <option value="1" selected>7th Ave Central Station (Central Metro)</option>
+                                <option value="2">West Industrial Terminal (North)</option>
+                                <option value="3">South Highway Junction (South)</option>
+                                <option value="4">Eastern Boulevard Promenade (East)</option>
+                            </select>
+                        </div>
+
+                        <!-- Category Select -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Offense Category *</label>
+                            <select name="category" class="form-select" required>
+                                <option value="theft" selected>Theft &amp; Armed Robbery</option>
+                                <option value="burglary">Commercial &amp; Residential Burglary</option>
+                                <option value="vehicle">Motor Vehicle Theft</option>
+                                <option value="assault">Aggravated Assault</option>
+                            </select>
+                        </div>
+
+                        <!-- Forecast Horizon Radio Buttons -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-secondary d-block mb-2">Forecast Horizon Window *</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check p-2 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="forecast_period" id="p1" value="7_days">
+                                    <label class="form-check-label small fw-semibold" for="p1">Next 7 Days (Tactical Patrol Forecast)</label>
+                                </div>
+                                <div class="form-check p-2 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="forecast_period" id="p2" value="14_days">
+                                    <label class="form-check-label small fw-semibold" for="p2">Next 14 Days (Bi-Weekly Allocation)</label>
+                                </div>
+                                <div class="form-check p-2 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="forecast_period" id="p3" value="30_days" checked>
+                                    <label class="form-check-label small fw-semibold" for="p3">Next 30 Days (Monthly Resource Planning)</label>
+                                </div>
+                                <div class="form-check p-2 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="forecast_period" id="p4" value="90_days">
+                                    <label class="form-check-label small fw-semibold" for="p4">Next Quarter / 90 Days (Strategic Outlook)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-blue w-100 py-2 fs-6">
+                            <i class="bi bi-cpu me-2"></i> Compute Predictive Projection
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Output & Trajectory Chart Panel -->
+        <div class="col-lg-7">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Model Output &amp; Trajectory Forecast</h5>
+                        <small class="text-muted">Generated by RandomForest_v2.4_Prod</small>
+                    </div>
+                    <span class="badge bg-success-subtle text-success">93.4% Confidence</span>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Predicted Count Callout Box -->
+                    <div class="p-4 rounded-4 bg-light border text-center mb-4">
+                        <small class="text-uppercase fw-semibold text-muted tracking-wider">Projected Incident Frequency (Next 30 Days)</small>
+                        <div class="display-4 fw-bold text-navy my-2">
+                            48 <span class="fs-4 text-muted fw-normal">± 4 cases</span>
+                        </div>
+                        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white rounded-pill border small">
+                            <span class="badge bg-danger">Critical Risk</span>
+                            <span class="text-secondary">Expected Range: 44 to 52 incidents</span>
+                        </div>
+                    </div>
+
+                    <!-- Trajectory Comparison Chart -->
+                    <div style="height: 240px;" class="mb-3">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+
+                    <!-- Limitations & Legal Disclaimer -->
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="bi bi-shield-exclamation text-warning me-1"></i>
+                        <strong>Intelligence Advisory:</strong> Predictive forecasts represent statistical probability approximations calculated from historical patterns and should be utilized to inform patrol distribution rather than as conclusive evidence of criminal activity.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Predictions Table -->
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom">Prediction Archive &amp; Validation Log</h5>
+            <span class="badge bg-light text-dark border">Recent Queries</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-uppercase">
+                        <tr>
+                            <th class="ps-4">Forecast Target</th>
+                            <th>Offense Category</th>
+                            <th>Time Window</th>
+                            <th>Predicted Volume</th>
+                            <th>Confidence Range</th>
+                            <th>Model Architecture</th>
+                            <th class="pe-4 text-end">Date Executed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if past_predictions %}
+                            {% for pred in past_predictions %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">{{ pred.location }}</td>
+                                <td>{{ pred.category }}</td>
+                                <td>{{ pred.period }}</td>
+                                <td class="fw-bold text-navy">{{ pred.predicted_count }}</td>
+                                <td><span class="badge bg-success-subtle text-success">92%</span></td>
+                                <td>{{ pred.model_name|default:"RandomForest" }}</td>
+                                <td class="pe-4 text-end text-muted">{{ pred.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">7th Ave Central Station</td>
+                                <td>Theft &amp; Robbery</td>
+                                <td>Next 30 Days</td>
+                                <td class="fw-bold text-navy fs-6">48</td>
+                                <td><span class="badge bg-success-subtle text-success">93.4%</span></td>
+                                <td>Random Forest Regressor</td>
+                                <td class="pe-4 text-end text-muted">Today 09:30</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-semibold">West Industrial Terminal</td>
+                                <td>Commercial Burglary</td>
+                                <td>Next 14 Days</td>
+                                <td class="fw-bold text-navy fs-6">19</td>
+                                <td><span class="badge bg-success-subtle text-success">89.8%</span></td>
+                                <td class="pe-4 text-end text-muted">Yesterday</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-semibold">South Highway Junction</td>
+                                <td>Vehicle Theft</td>
+                                <td>Next 60 Days</td>
+                                <td class="fw-bold text-navy fs-6">62</td>
+                                <td><span class="badge bg-success-subtle text-success">91.0%</span></td>
+                                <td class="pe-4 text-end text-muted">Oct 09, 2024</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4 (Current)', 'Week +1 (Pred)', 'Week +2 (Pred)', 'Week +3 (Pred)', 'Week +4 (Pred)'],
+                datasets: [
+                    {
+                        label: 'Historical Actuals',
+                        data: [11, 14, 12, 13, null, null, null, null],
+                        borderColor: '#1769FF',
+                        backgroundColor: 'rgba(23, 105, 255, 0.1)',
+                        pointRadius: 4,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Projected Trajectory',
+                        data: [null, null, null, 13, 11, 13, 12, 12],
+                        borderColor: '#20D5F5',
+                        borderDash: [5, 5],
+                        pointRadius: 4,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: false, grid: { color: '#F1F5F9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

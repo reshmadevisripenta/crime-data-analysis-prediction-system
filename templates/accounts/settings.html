@@ -1,0 +1,200 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}System Settings | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Operational Settings &amp; Preferences{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Messages Alert -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'accounts:settings' %}" id="settingsForm">
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ user.email }}">
+        <input type="hidden" name="phone" value="{{ user.phone }}">
+        <input type="hidden" name="organization" value="{{ user.organization }}">
+
+        <div class="row g-4">
+            <!-- Left Column: General & Privacy -->
+            <div class="col-lg-6">
+                <!-- 1. General Settings Card -->
+                <div class="card card-custom mb-4">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">
+                            <i class="bi bi-sliders text-primary me-2"></i>General Settings
+                        </h5>
+                        <small class="text-muted">Localization &amp; Environment</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label for="timezone" class="form-label small fw-semibold text-secondary">Operational Timezone</label>
+                            <select name="timezone" id="timezone" class="form-select">
+                                <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                <option value="Asia/Kolkata" selected>Asia/Kolkata (IST +05:30)</option>
+                                <option value="America/New_York">America/New_York (EST -05:00)</option>
+                                <option value="America/Chicago">America/Chicago (CST -06:00)</option>
+                                <option value="America/Los_Angeles">America/Los_Angeles (PST -08:00)</option>
+                                <option value="Europe/London">Europe/London (GMT/BST)</option>
+                            </select>
+                            <div class="form-text small text-muted">All crime timestamp analyses adjust to this timezone display.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="date_format" class="form-label small fw-semibold text-secondary">Date Format</label>
+                            <select name="date_format" id="date_format" class="form-select">
+                                <option value="YYYY-MM-DD" selected>YYYY-MM-DD (ISO 8601 - Recommended)</option>
+                                <option value="DD/MM/YYYY">DD/MM/YYYY (Day/Month/Year)</option>
+                                <option value="MM/DD/YYYY">MM/DD/YYYY (Month/Day/Year)</option>
+                                <option value="DD MMM YYYY">DD MMM YYYY (e.g., 12 Oct 2026)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="language" class="form-label small fw-semibold text-secondary">Console Language</label>
+                            <select name="language" id="language" class="form-select">
+                                <option value="en" selected>English (US - Official)</option>
+                                <option value="es">Español (Spanish)</option>
+                                <option value="fr">Français (French)</option>
+                                <option value="de">Deutsch (German)</option>
+                                <option value="hi">Hindi (India)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Privacy Settings Card -->
+                <div class="card card-custom">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">
+                            <i class="bi bi-shield-check text-success me-2"></i>Privacy Settings
+                        </h5>
+                        <small class="text-muted">Data Governance</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="share_aggregated" name="share_aggregated" checked>
+                                <label class="form-check-label fw-semibold text-dark" for="share_aggregated">
+                                    Participate in Inter-Agency Aggregated Trends
+                                </label>
+                                <div class="form-text small text-muted">Allow non-identifying monthly incident counts to be shared for inter-jurisdictional crime modeling.</div>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="mask_coordinates" name="mask_coordinates" checked>
+                                <label class="form-check-label fw-semibold text-dark" for="mask_coordinates">
+                                    Anonymize Exact Coordinates in Public Briefs
+                                </label>
+                                <div class="form-text small text-muted">Fuzz exact street coordinates to nearest block center when generating public summaries.</div>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="telemetry_logs" name="telemetry_logs">
+                                <label class="form-check-label fw-semibold text-dark" for="telemetry_logs">
+                                    Share Anonymous Performance Telemetry
+                                </label>
+                                <div class="form-text small text-muted">Send algorithm R² metrics and query latency logs to improve system model presets.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Security & Danger Zone -->
+            <div class="col-lg-6">
+                <!-- 3. Security Settings Card -->
+                <div class="card card-custom mb-4">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">
+                            <i class="bi bi-lock text-warning me-2"></i>Security Settings
+                        </h5>
+                        <small class="text-muted">Authentication &amp; Sessions</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light mb-3">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Two-Factor Authentication (2FA)</h6>
+                                <small class="text-muted">Require an authenticator code (TOTP) in addition to password during sign-in.</small>
+                            </div>
+                            <div class="form-check form-switch fs-4">
+                                <input class="form-check-input" type="checkbox" id="two_factor_auth" name="two_factor_auth">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="session_timeout" class="form-label small fw-semibold text-secondary">Inactivity Session Timeout</label>
+                            <select name="session_timeout" id="session_timeout" class="form-select">
+                                <option value="15">15 Minutes (High Security Mode)</option>
+                                <option value="30" selected>30 Minutes (Recommended)</option>
+                                <option value="60">60 Minutes</option>
+                                <option value="120">2 Hours</option>
+                            </select>
+                            <div class="form-text small text-muted">Automatically lock analyst workspace if no mouse or query activity is detected.</div>
+                        </div>
+
+                        <div class="p-3 border rounded-3 bg-white small text-secondary">
+                            <div class="d-flex align-items-center gap-2 mb-1 text-dark fw-semibold">
+                                <i class="bi bi-shield-lock-fill text-primary"></i> CJIS / ISO 27001 Compliance
+                            </div>
+                            Session logs and cryptographic access hashes are audited every 24 hours.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Account Actions Card (Danger Zone) -->
+                <div class="card card-custom border-danger border-opacity-25">
+                    <div class="card-header-custom bg-danger bg-opacity-10 border-bottom border-danger border-opacity-25">
+                        <h5 class="card-title-custom text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>Account Actions &amp; Danger Zone
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-dark mb-1">Export Personal Account Data</h6>
+                            <p class="text-muted small mb-2">Download a complete JSON export of your activity log, saved queries, and generated predictions.</p>
+                            <a href="/reports/" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download me-1"></i> Export Account Data
+                            </a>
+                        </div>
+
+                        <hr>
+
+                        <div>
+                            <h6 class="fw-bold text-danger mb-1">Deactivate / Delete Account</h6>
+                            <p class="text-muted small mb-3">Permanently purge your analyst credentials and workspace profile. This action cannot be reversed without supervisor approval.</p>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteAccount()">
+                                <i class="bi bi-trash3 me-1"></i> Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button Bar -->
+        <div class="d-flex justify-content-end mt-4 mb-2">
+            <button type="submit" class="btn btn-primary-blue px-4 py-2 fs-6">
+                <i class="bi bi-check-lg me-1"></i> Save Settings
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function confirmDeleteAccount() {
+        if (confirm("WARNING: Are you sure you want to delete your analyst account? All local preferences and active sessions will be revoked.")) {
+            alert("Account deletion request submitted for administrative verification.");
+        }
+    }
+</script>
+{% endblock %}

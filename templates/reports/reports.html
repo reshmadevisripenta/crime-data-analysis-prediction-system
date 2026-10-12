@@ -1,0 +1,150 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Intelligence Reports | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Automated Intelligence Reports &amp; Exports{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4 mb-4">
+        <!-- Generate Report Request Form -->
+        <div class="col-lg-5">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom"><i class="bi bi-file-earmark-plus text-primary me-2"></i>Generate Executive Briefing</h5>
+                        <small class="text-muted">Compile analytics into portable formats</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="/reports/generate/" id="reportGenForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Report Template Type *</label>
+                            <select name="report_type" class="form-select" required>
+                                <option value="executive_summary" selected>Executive Command Briefing (PDF)</option>
+                                <option value="hotspot_analysis">Hotspot &amp; Geospatial Risk Audit (PDF)</option>
+                                <option value="prediction_forecast">Predictive ML Forecast Projection (PDF)</option>
+                                <option value="tabular_export">Complete Tabular Incident Export (CSV / Excel)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Target Jurisdiction</label>
+                            <select name="location" class="form-select">
+                                <option value="all" selected>All Metro Jurisdictions</option>
+                                <option value="1">Central Ward</option>
+                                <option value="2">North Industrial District</option>
+                                <option value="3">South Transit Corridor</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">Start Date</label>
+                                <input type="date" name="date_from" class="form-control" value="2024-01-01">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">End Date</label>
+                                <input type="date" name="date_to" class="form-control" value="2024-10-12">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-secondary d-block mb-2">Export Format</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="fmtPdf" value="pdf" checked>
+                                    <label class="form-check-label small fw-semibold" for="fmtPdf">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF Document
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="fmtCsv" value="csv">
+                                    <label class="form-check-label small fw-semibold" for="fmtCsv">
+                                        <i class="bi bi-file-earmark-spreadsheet text-success me-1"></i> CSV Spreadsheet
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-blue w-100 py-2 fs-6">
+                            <i class="bi bi-gear-wide-connected me-1"></i> Compile &amp; Download Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Reports Archive Table -->
+        <div class="col-lg-7">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Compiled Report Archives</h5>
+                        <small class="text-muted">Recent analyst exports</small>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="table-light text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Report Title</th>
+                                    <th>Classification</th>
+                                    <th>Format</th>
+                                    <th>Compiled Date</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if reports %}
+                                    {% for rep in reports %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">{{ rep.title }}</td>
+                                        <td>{{ rep.report_type|title }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ rep.format|upper }}</span></td>
+                                        <td class="text-muted">{{ rep.created_at|date:"M d, Y" }}</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="/reports/{{ rep.id }}/download/" class="btn btn-sm btn-outline-primary py-0">Download</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Q3_Crime_Trend_Briefing.pdf</td>
+                                        <td>Executive Summary</td>
+                                        <td><span class="badge bg-danger-subtle text-danger">PDF</span></td>
+                                        <td class="text-muted">Oct 11, 2024</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>Metro_Central_Audit_2024.csv</td>
+                                        <td>Tabular Dataset</td>
+                                        <td><span class="badge bg-success-subtle text-success">CSV</span></td>
+                                        <td class="text-muted">Oct 08, 2024</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Predictive_30Day_Outlook.pdf</td>
+                                        <td>Prediction Forecast</td>
+                                        <td><span class="badge bg-danger-subtle text-danger">PDF</span></td>
+                                        <td class="text-muted">Oct 02, 2024</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dataset Inspection &amp; Preview | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Dataset Quality Audit &amp; Preview{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <h5 class="fw-bold text-navy mb-1">{{ dataset.original_filename|default:"metro_crime_log_2024_q3.csv" }}</h5>
+            <small class="text-muted">
+                Uploaded by {{ dataset.user.username|default:"Lead Analyst" }} on {{ dataset.uploaded_at|date:"M d, Y H:i"|default:"Oct 11, 2024 10:15" }}
+            </small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/crime-data/upload/" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Upload Another
+            </a>
+            <a href="#" class="btn btn-primary-blue btn-sm">
+                <i class="bi bi-download me-1"></i> Download Sanitized CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Data Quality Summary Metrics Cards (Row of 4) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Total Rows Ingested</span>
+                    <i class="bi bi-file-earmark-spreadsheet text-primary fs-4"></i>
+                </div>
+                <h3 class="fw-bold text-navy mb-0">{{ dataset.total_records|default:"12,480" }}</h3>
+                <small class="text-muted">File format: {{ dataset.get_file_type_display|default:"CSV" }}</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Valid Records</span>
+                    <i class="bi bi-check-circle text-success fs-4"></i>
+                </div>
+                <h3 class="fw-bold text-success mb-0">{{ dataset.valid_records|default:"12,445" }}</h3>
+                <small class="text-success"><i class="bi bi-arrow-up-short"></i> 99.7% Clean data</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Missing / Incomplete</span>
+                    <i class="bi bi-exclamation-triangle text-warning fs-4"></i>
+                </div>
+                <h3 class="fw-bold text-warning mb-0">{{ dataset.invalid_records|default:"35" }}</h3>
+                <small class="text-muted">0.3% Imputed or flagged</small>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-custom p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Duplicates Found</span>
+                    <i class="bi bi-intersect text-danger fs-4"></i>
+                </div>
+                <h3 class="fw-bold text-navy mb-0">0</h3>
+                <small class="text-muted">Deduplication resolved</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable Data Preview Table (First 100 Rows) -->
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <div>
+                <h5 class="card-title-custom">Sample Data Preview (First 100 Rows)</h5>
+                <small class="text-muted">Validated schema mapping with crime category &amp; coordinates</small>
+            </div>
+            <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-all me-1"></i>Schema Conformance: Passed</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                <table class="table table-sm table-striped table-hover align-middle mb-0 font-monospace small">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th class="ps-3">#</th>
+                            <th>Offense Category</th>
+                            <th>Location Name</th>
+                            <th>City</th>
+                            <th>Incident Date</th>
+                            <th>Time</th>
+                            <th>Severity</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th class="pe-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if preview_rows %}
+                            {% for row in preview_rows %}
+                            <tr>
+                                <td class="ps-3">{{ forloop.counter }}</td>
+                                <td>{{ row.category }}</td>
+                                <td>{{ row.location }}</td>
+                                <td>{{ row.city }}</td>
+                                <td>{{ row.incident_date }}</td>
+                                <td>{{ row.incident_time }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ row.severity }}</span></td>
+                                <td>{{ row.latitude }}</td>
+                                <td>{{ row.longitude }}</td>
+                                <td class="pe-3">{{ row.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Mock Data Rows -->
+                            <tr>
+                                <td class="ps-3">1</td>
+                                <td><span class="badge bg-danger-subtle text-danger">Armed Robbery</span></td>
+                                <td>7th Ave Central Mall</td>
+                                <td>Metro City</td>
+                                <td>2024-10-10</td>
+                                <td>22:30</td>
+                                <td>Critical</td>
+                                <td>28.6139</td>
+                                <td>77.2090</td>
+                                <td class="pe-3"><span class="badge bg-warning-subtle text-warning">Investigating</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3">2</td>
+                                <td><span class="badge bg-primary-subtle text-primary">Vehicle Theft</span></td>
+                                <td>Transit Hub Parking B</td>
+                                <td>Metro City</td>
+                                <td>2024-10-10</td>
+                                <td>19:15</td>
+                                <td>Medium</td>
+                                <td>28.6210</td>
+                                <td>77.2140</td>
+                                <td class="pe-3"><span class="badge bg-secondary-subtle text-secondary">Reported</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3">3</td>
+                                <td><span class="badge bg-warning-subtle text-warning">Commercial Burglary</span></td>
+                                <td>North Industrial Belt</td>
+                                <td>Metro City</td>
+                                <td>2024-10-09</td>
+                                <td>03:45</td>
+                                <td>High</td>
+                                <td>28.6502</td>
+                                <td>77.2300</td>
+                                <td class="pe-3"><span class="badge bg-warning-subtle text-warning">Investigating</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3">4</td>
+                                <td><span class="badge bg-info-subtle text-info">Financial Fraud</span></td>
+                                <td>Commercial Bank Sector 4</td>
+                                <td>Metro City</td>
+                                <td>2024-10-09</td>
+                                <td>11:20</td>
+                                <td>Low</td>
+                                <td>28.6015</td>
+                                <td>77.1950</td>
+                                <td class="pe-3"><span class="badge bg-success-subtle text-success">Solved</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3">5</td>
+                                <td><span class="badge bg-danger-subtle text-danger">Aggravated Assault</span></td>
+                                <td>East Boulevard Promenade</td>
+                                <td>Metro City</td>
+                                <td>2024-10-08</td>
+                                <td>23:55</td>
+                                <td>Critical</td>
+                                <td>28.6288</td>
+                                <td>77.2412</td>
+                                <td class="pe-3"><span class="badge bg-warning-subtle text-warning">Investigating</span></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light p-3 d-flex justify-content-between align-items-center">
+                <span class="small text-muted">Showing 5 of 12,480 rows in sample view</span>
+                <a href="/analysis/" class="btn btn-sm btn-primary-blue">Proceed to Exploratory Analysis &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

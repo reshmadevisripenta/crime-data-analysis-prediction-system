@@ -1,0 +1,157 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Record Details | Crime Intelligence Platform{% endblock %}
+{% block page_title %}Incident Record Dossier{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Top Action Navigation -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <a href="/crime-data/" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i> Back to Incident Registry
+        </a>
+        <div class="d-flex gap-2">
+            <a href="/crime-data/{{ record.id|default:'1' }}/edit/" class="btn btn-primary-blue btn-sm d-flex align-items-center gap-2">
+                <i class="bi bi-pencil-square"></i> Edit Record
+            </a>
+            <a href="/reports/?record_id={{ record.id|default:'1' }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-pdf"></i> Export Dossier
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Incident Information Card -->
+        <div class="col-lg-8">
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="badge bg-primary fs-6 py-2 px-3">
+                            #CR-{{ record.id|default:"04821"|stringformat:"05d" }}
+                        </div>
+                        <div>
+                            <h5 class="card-title-custom">{{ record.category.name|default:"Armed Robbery & Aggravated Assault" }}</h5>
+                            <small class="text-muted">Incident Occurred: {{ record.incident_date|default:"October 10, 2024" }} {% if record.incident_time %}{{ record.incident_time|time:"H:i" }}{% else %}22:30 IST{% endif %}</small>
+                        </div>
+                    </div>
+                    <div>
+                        {% if record.severity == 'critical' %}
+                            <span class="badge bg-danger fs-6">Critical Severity</span>
+                        {% elif record.severity == 'high' %}
+                            <span class="badge bg-danger-subtle text-danger fs-6">High Severity</span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning fs-6">Medium Severity</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Narrative Description -->
+                    <h6 class="fw-bold text-navy mb-2"><i class="bi bi-file-text text-primary me-2"></i>Official Case Narrative</h6>
+                    <div class="p-3 bg-light rounded-3 border mb-4 text-secondary leading-relaxed">
+                        {{ record.description|default:"Two unidentified individuals approached a commercial retail establishment after closing hours brandishing unregistered firearms. Suspects forcibly took cash register contents before fleeing eastbound on foot towards Sector 7 railway tracks. No civilian casualties reported. Local surveillance camera footage recovered and forwarded to forensic analysis." }}
+                    </div>
+
+                    <!-- Metadata Grid -->
+                    <h6 class="fw-bold text-navy mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Incident Attributes</h6>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white border rounded-3">
+                                <small class="text-muted d-block mb-1">Investigation Status</small>
+                                <span class="badge bg-warning-subtle text-warning fw-semibold fs-6">
+                                    <i class="bi bi-hourglass-split me-1"></i>{{ record.get_status_display|default:"Under Investigation" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white border rounded-3">
+                                <small class="text-muted d-block mb-1">Source / Reporting Agency</small>
+                                <span class="fw-bold text-dark">{{ record.source|default:"Metro Police Department Dispatch Log" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white border rounded-3">
+                                <small class="text-muted d-block mb-1">Associated Ingestion Dataset</small>
+                                <span class="text-dark fw-semibold">
+                                    <i class="bi bi-database me-1 text-primary"></i>{{ record.dataset_upload.original_filename|default:"metro_crime_log_2024_q3.csv" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white border rounded-3">
+                                <small class="text-muted d-block mb-1">Record Ingestion Timestamp</small>
+                                <span class="text-dark">{{ record.created_at|default:"Oct 11, 2024 08:30:15"|date:"M d, Y H:i:s" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Spatial Intelligence Sidebar -->
+        <div class="col-lg-4">
+            <div class="card card-custom mb-4">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom"><i class="bi bi-geo-alt text-danger me-2"></i>Jurisdiction &amp; GPS</h5>
+                </div>
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-1">{{ record.location.name|default:"7th Ave Market District" }}</h6>
+                    <p class="text-muted small mb-3">{{ record.location.city|default:"Central Metro" }}, {{ record.location.state|default:"State" }} ({{ record.location.country|default:"India" }})</p>
+
+                    <div class="p-3 bg-light rounded-3 border mb-3 small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Latitude:</span>
+                            <span class="fw-mono fw-bold">{{ record.location.latitude|default:"28.613939" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Longitude:</span>
+                            <span class="fw-mono fw-bold">{{ record.location.longitude|default:"77.209021" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Region Type:</span>
+                            <span class="badge bg-secondary-subtle text-secondary">{{ record.location.region_type|default:"Urban"|title }}</span>
+                        </div>
+                    </div>
+
+                    <a href="/location/?lat={{ record.location.latitude|default:'28.613939' }}&lng={{ record.location.longitude|default:'77.209021' }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-map me-1"></i> Locate on Leaflet Map
+                    </a>
+                </div>
+            </div>
+
+            <!-- Semantic Ontology Relationship Summary -->
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="card-title-custom"><i class="bi bi-share text-cyan me-2"></i>Ontology Connections</h5>
+                </div>
+                <div class="card-body p-4 small">
+                    <p class="text-muted mb-3">Associated RDF semantic triples linked to this offense taxonomy:</p>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
+                            <span><code class="text-primary">hasOffenseType</code></span>
+                            <span class="fw-bold">ViolentCrime</span>
+                        </div>
+                        <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
+                            <span><code class="text-primary">hasWeaponInvolved</code></span>
+                            <span class="fw-bold">Firearm</span>
+                        </div>
+                        <div class="p-2 border rounded bg-light d-flex align-items-center justify-content-between">
+                            <span><code class="text-primary">spatialHotspotCluster</code></span>
+                            <span class="fw-bold text-danger">Cluster-A04</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="/ontology/" class="btn btn-sm btn-outline-info w-100">
+                            Explore Knowledge Graph &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

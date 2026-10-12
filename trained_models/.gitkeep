@@ -1,0 +1,2 @@
+# This directory stores trained ML model pickle files
+# Each model is stored as: trained_models/model_{id}_{algorithm}.pkl
