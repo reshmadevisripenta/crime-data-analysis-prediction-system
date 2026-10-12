@@ -1,0 +1,880 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}API Documentation | Crime Intelligence Platform{% endblock %}
+{% block page_title %}API Documentation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .api-header-card {
+        background: linear-gradient(135deg, var(--primary-navy, #071B3A) 0%, var(--secondary-navy, #102B52) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        color: #FFFFFF;
+        position: relative;
+        overflow: hidden;
+    }
+    .api-header-card::after {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(32, 213, 245, 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .sticky-filter-bar {
+        position: sticky;
+        top: 75px;
+        z-index: 99;
+        background: rgba(244, 247, 252, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 0;
+        margin-bottom: 1.5rem;
+    }
+    .method-badge {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+        letter-spacing: 0.05em;
+    }
+    .method-badge-get {
+        background-color: #10B981;
+        color: #FFFFFF;
+    }
+    .method-badge-post {
+        background-color: var(--primary-blue, #1769FF);
+        color: #FFFFFF;
+    }
+    .endpoint-path {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--primary-navy, #071B3A);
+    }
+    .auth-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.25rem 0.55rem;
+        border-radius: 20px;
+        background-color: rgba(23, 105, 255, 0.1);
+        color: var(--primary-blue, #1769FF);
+        border: 1px solid rgba(23, 105, 255, 0.2);
+    }
+    .auth-badge-admin {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .endpoint-card {
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        background: #FFFFFF;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        margin-bottom: 1.25rem;
+        transition: all 0.2s ease;
+    }
+    .endpoint-card:hover {
+        border-color: #CBD5E1;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+    .code-block-wrapper {
+        background: #0B192C;
+        border-radius: 8px;
+        padding: 1rem;
+        color: #E2E8F0;
+        font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+        font-size: 0.82rem;
+        position: relative;
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .code-block-wrapper pre {
+        margin: 0;
+        color: #38BDF8;
+    }
+    .response-preview-box {
+        display: none;
+        margin-top: 1rem;
+        border-top: 1px dashed #E2E8F0;
+        padding-top: 1rem;
+    }
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(23, 105, 255, 0.05);
+        color: var(--primary-navy, #071B3A);
+        font-weight: 700;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(23, 105, 255, 0.25);
+    }
+    .tag-count {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        background: #E2E8F0;
+        border-radius: 12px;
+        color: #475569;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header Banner -->
+    <div class="api-header-card p-4 p-lg-5 mb-4 shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-info bg-opacity-25 text-info px-3 py-1 mb-2 fw-semibold" style="letter-spacing: 0.05em;">
+                    <i class="bi bi-braces-asterisk me-1"></i> REST &amp; ANALYTIC INTERFACES
+                </span>
+                <h2 class="fw-bold text-white mb-2">API Reference &amp; Developer Console</h2>
+                <p class="text-white-50 mb-3 fs-6">
+                    Comprehensive documentation of endpoints for automated crime data ingestion, spatial analysis, predictive forecasting, ontology semantic graph querying, and executive reporting.
+                </p>
+                <div class="d-flex flex-wrap gap-2 text-white-50 small">
+                    <span class="me-3"><i class="bi bi-shield-check text-cyan me-1"></i> Session &amp; CSRF Authenticated</span>
+                    <span class="me-3"><i class="bi bi-file-earmark-code text-cyan me-1"></i> JSON Response Format</span>
+                    <span><i class="bi bi-speedometer2 text-cyan me-1"></i> Standard HTTP Status Codes</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="d-inline-flex flex-column align-items-lg-end">
+                    <div class="bg-white bg-opacity-10 rounded-3 p-3 text-start">
+                        <small class="text-white-50 d-block mb-1">Base Platform URL</small>
+                        <code class="text-info fw-bold">{{ request.scheme }}://{{ request.get_host }}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Filter & Search Bar -->
+    <div class="sticky-filter-bar">
+        <div class="card card-custom p-3 shadow-sm border-0">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="endpointSearchInput" class="form-control bg-light border-start-0" placeholder="Filter endpoints by path, description, or keyword..." onkeyup="filterEndpoints()">
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-7 d-flex justify-content-md-end gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-secondary filter-btn active" data-filter="all" onclick="filterByMethod('all')">All Methods</button>
+                    <button class="btn btn-sm btn-outline-success filter-btn" data-filter="GET" onclick="filterByMethod('GET')">GET</button>
+                    <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="POST" onclick="filterByMethod('POST')">POST</button>
+                    <button class="btn btn-sm btn-light border text-muted" onclick="toggleAllAccordions(true)"><i class="bi bi-arrows-expand me-1"></i>Expand All</button>
+                    <button class="btn btn-sm btn-light border text-muted" onclick="toggleAllAccordions(false)"><i class="bi bi-arrows-collapse me-1"></i>Collapse</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accordion Module Groups -->
+    <div class="accordion" id="apiAccordion">
+
+        <!-- Module 1: Crime Data -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="crime-data">
+            <h2 class="accordion-header" id="headingCrimeData">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCrimeData" aria-expanded="true" aria-controls="collapseCrimeData">
+                    <i class="bi bi-database text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Crime Data Endpoints</span>
+                    <span class="tag-count ms-auto me-3">2 Endpoints</span>
+                </button>
+            </h2>
+            <div id="collapseCrimeData" class="accordion-collapse collapse show" aria-labelledby="headingCrimeData">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+                    
+                    <!-- Endpoint: GET /crime-data/records/ -->
+                    <div class="endpoint-card p-3 mb-3" data-method="GET" data-path="/crime-data/records/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/crime-data/records/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/crime-data/records/', 'GET', null, 'preview-records')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Retrieve paginated list of recorded crime incidents with optional query filters (category, status, jurisdiction, dates).</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "count": 1420,
+  "next": "/crime-data/records/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 101,
+      "case_id": "CR-2024-00101",
+      "crime_type": "Grand Theft Auto",
+      "category": "Property Crime",
+      "severity": "High",
+      "date_time": "2024-09-18T14:30:00Z",
+      "location_name": "Downtown Metro Station",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "status": "Under Investigation"
+    }
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-records" class="response-preview-box"></div>
+                    </div>
+
+                    <!-- Endpoint: GET /crime-data/records/<id>/ -->
+                    <div class="endpoint-card p-3" data-method="GET" data-path="/crime-data/records/<id>/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/crime-data/records/&lt;id&gt;/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/crime-data/records/1/', 'GET', null, 'preview-record-detail')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it (ID: 1)
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Retrieve full details, evidentiary metadata, and timeline for an individual recorded incident.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "id": 1,
+  "case_id": "CR-2024-00001",
+  "category": "Burglary",
+  "description": "Commercial warehouse unauthorized forced entry",
+  "latitude": 40.7145,
+  "longitude": -74.0082,
+  "reported_date": "2024-10-01T02:15:00Z",
+  "status": "Closed",
+  "officer_assigned": "Det. J. Miller"
+}</pre>
+                        </div>
+                        <div id="preview-record-detail" class="response-preview-box"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 2: Analysis -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="analysis">
+            <h2 class="accordion-header" id="headingAnalysis">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAnalysis" aria-expanded="false" aria-controls="collapseAnalysis">
+                    <i class="bi bi-bar-chart-line text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Analysis Endpoints</span>
+                    <span class="tag-count ms-auto me-3">2 Endpoints</span>
+                </button>
+            </h2>
+            <div id="collapseAnalysis" class="accordion-collapse collapse" aria-labelledby="headingAnalysis">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /analysis/api/data/ -->
+                    <div class="endpoint-card p-3 mb-3" data-method="GET" data-path="/analysis/api/data/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/analysis/api/data/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/analysis/api/data/', 'GET', null, 'preview-analysis-data')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Fetches aggregated statistical distributions: incident frequencies by category, diurnal hour breakdown, and monthly trends.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "category_counts": {
+    "Theft": 482,
+    "Assault": 230,
+    "Burglary": 194,
+    "Vandalism": 112
+  },
+  "hourly_distribution": [12, 8, 4, 2, 5, 11, 24, 38, 55, 62, 70, 84, 92, 88, 76, 91, 105, 118, 130, 110, 85, 60, 42, 28],
+  "monthly_trend": {
+    "2024-05": 190,
+    "2024-06": 210,
+    "2024-07": 245
+  }
+}</pre>
+                        </div>
+                        <div id="preview-analysis-data" class="response-preview-box"></div>
+                    </div>
+
+                    <!-- Endpoint: POST /analysis/api/run/ -->
+                    <div class="endpoint-card p-3" data-method="POST" data-path="/analysis/run/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-post">POST</span>
+                                <span class="endpoint-path">/analysis/run/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <span class="badge bg-secondary">CSRF Required</span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Execute on-demand exploratory crime analytics for a customized date window and category filter.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Request Body (application/x-www-form-urlencoded or JSON)</h6>
+                        <div class="code-block-wrapper mb-3">
+<pre>{
+  "date_from": "2024-01-01",
+  "date_to": "2024-09-30",
+  "category_id": 3
+}</pre>
+                        </div>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "status": "success",
+  "records_processed": 540,
+  "summary": {
+    "total_crimes": 540,
+    "peak_hour": 21,
+    "primary_hotspot": "District 4"
+  }
+}</pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 3: Location Analysis -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="location">
+            <h2 class="accordion-header" id="headingLocation">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocation" aria-expanded="false" aria-controls="collapseLocation">
+                    <i class="bi bi-geo-alt text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Location &amp; Spatial Endpoints</span>
+                    <span class="tag-count ms-auto me-3">1 Endpoint</span>
+                </button>
+            </h2>
+            <div id="collapseLocation" class="accordion-collapse collapse" aria-labelledby="headingLocation">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /location/api/markers/ -->
+                    <div class="endpoint-card p-3" data-method="GET" data-path="/location/api/markers/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/location/api/markers/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/location/api/markers/', 'GET', null, 'preview-markers')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Retrieve geocoded coordinate pairs and risk intensity weights for interactive map pin clusters and heatmap layers.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "markers": [
+    {
+      "id": 1,
+      "title": "Robbery Incident",
+      "lat": 12.9716,
+      "lng": 77.5946,
+      "category": "Robbery",
+      "severity": "Critical",
+      "address": "Brigade Road Commercial Hub",
+      "intensity": 0.85
+    },
+    {
+      "id": 2,
+      "title": "Vehicle Theft",
+      "lat": 12.9352,
+      "lng": 77.6245,
+      "category": "Theft",
+      "severity": "Medium",
+      "address": "Koramangala 4th Block",
+      "intensity": 0.45
+    }
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-markers" class="response-preview-box"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 4: Prediction -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="prediction">
+            <h2 class="accordion-header" id="headingPrediction">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrediction" aria-expanded="false" aria-controls="collapsePrediction">
+                    <i class="bi bi-graph-up-arrow text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Prediction &amp; Forecasting Endpoints</span>
+                    <span class="tag-count ms-auto me-3">1 Endpoint</span>
+                </button>
+            </h2>
+            <div id="collapsePrediction" class="accordion-collapse collapse" aria-labelledby="headingPrediction">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /prediction/forecast/ -->
+                    <div class="endpoint-card p-3" data-method="GET" data-path="/prediction/forecast/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/prediction/forecast/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/prediction/forecast/', 'GET', null, 'preview-forecast')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Generates time-series and ML model crime projection trends for upcoming horizons.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "horizon_days": 30,
+  "model_used": "RandomForestRegressor / ARIMA Hybrid",
+  "projected_total": 312,
+  "risk_trend": "Increasing (+4.2%)",
+  "timeline": [
+    {"date": "2024-11-01", "predicted_crimes": 11, "confidence_lower": 8, "confidence_upper": 14},
+    {"date": "2024-11-02", "predicted_crimes": 9, "confidence_lower": 7, "confidence_upper": 12}
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-forecast" class="response-preview-box"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 5: Ontology -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="ontology">
+            <h2 class="accordion-header" id="headingOntology">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOntology" aria-expanded="false" aria-controls="collapseOntology">
+                    <i class="bi bi-share text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Ontology &amp; Semantic Graph Endpoints</span>
+                    <span class="tag-count ms-auto me-3">2 Endpoints</span>
+                </button>
+            </h2>
+            <div id="collapseOntology" class="accordion-collapse collapse" aria-labelledby="headingOntology">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /ontology/api/graph-data/ -->
+                    <div class="endpoint-card p-3 mb-3" data-method="GET" data-path="/ontology/api/graph-data/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/ontology/api/graph-data/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/ontology/api/graph-data/', 'GET', null, 'preview-graph-data')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Retrieve node and link graph data of classes, relations, predicates, and crime concept hierarchies for D3 / Vis.js visualization.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "nodes": [
+    {"id": "Crime", "label": "Crime", "group": "class", "size": 25},
+    {"id": "ViolentCrime", "label": "Violent Crime", "group": "subclass", "size": 18},
+    {"id": "Weapon", "label": "Weapon", "group": "entity", "size": 15}
+  ],
+  "links": [
+    {"source": "ViolentCrime", "target": "Crime", "relation": "subClassOf"},
+    {"source": "ViolentCrime", "target": "Weapon", "relation": "involves"}
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-graph-data" class="response-preview-box"></div>
+                    </div>
+
+                    <!-- Endpoint: POST /ontology/sparql/ -->
+                    <div class="endpoint-card p-3" data-method="POST" data-path="/ontology/sparql/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-post">POST</span>
+                                <span class="endpoint-path">/ontology/sparql/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <span class="badge bg-secondary">CSRF Required</span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Execute raw SPARQL graph queries against the RDF/OWL knowledge base reasoning engine.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Request Body (JSON or Form)</h6>
+                        <div class="code-block-wrapper mb-3">
+<pre>{
+  "query": "SELECT ?crime ?type WHERE { ?crime rdf:type ?type } LIMIT 10"
+}</pre>
+                        </div>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "head": { "vars": [ "crime", "type" ] },
+  "results": {
+    "bindings": [
+      {
+        "crime": { "type": "uri", "value": "http://crime.ontology.org/incident#101" },
+        "type": { "type": "uri", "value": "http://crime.ontology.org/schema#Burglary" }
+      }
+    ]
+  }
+}</pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 6: Visualization -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="visualization">
+            <h2 class="accordion-header" id="headingVisualization">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVisualization" aria-expanded="false" aria-controls="collapseVisualization">
+                    <i class="bi bi-pie-chart text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Visualization Endpoints</span>
+                    <span class="tag-count ms-auto me-3">1 Endpoint</span>
+                </button>
+            </h2>
+            <div id="collapseVisualization" class="accordion-collapse collapse" aria-labelledby="headingVisualization">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /visualization/api/data/ -->
+                    <div class="endpoint-card p-3" data-method="GET" data-path="/visualization/api/data/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/visualization/api/data/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/visualization/api/data/', 'GET', null, 'preview-viz-data')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Provides serialized chart series for dynamic Chart.js and ApexCharts components.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+  "datasets": [
+    {
+      "label": "Violent Crimes",
+      "data": [45, 52, 49, 60, 58, 65, 72, 68, 74, 70],
+      "borderColor": "#EF4444"
+    },
+    {
+      "label": "Property Crimes",
+      "data": [120, 135, 115, 140, 155, 162, 170, 160, 158, 165],
+      "borderColor": "#1769FF"
+    }
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-viz-data" class="response-preview-box"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 7: Reports -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="reports">
+            <h2 class="accordion-header" id="headingReports">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReports" aria-expanded="false" aria-controls="collapseReports">
+                    <i class="bi bi-file-earmark-text text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Reports Endpoints</span>
+                    <span class="tag-count ms-auto me-3">1 Endpoint</span>
+                </button>
+            </h2>
+            <div id="collapseReports" class="accordion-collapse collapse" aria-labelledby="headingReports">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: POST /reports/generate/ -->
+                    <div class="endpoint-card p-3" data-method="POST" data-path="/reports/generate/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-post">POST</span>
+                                <span class="endpoint-path">/reports/generate/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <span class="badge bg-secondary">CSRF Required</span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Compiles analytics data, metrics, and risk projections into downloadable PDF or CSV formatted intelligence briefings.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Request Parameters (Form Data)</h6>
+                        <div class="code-block-wrapper mb-3">
+<pre>{
+  "report_type": "executive_summary",
+  "location": "all",
+  "date_from": "2024-01-01",
+  "date_to": "2024-10-12",
+  "format": "pdf"
+}</pre>
+                        </div>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (302 Redirect / File Stream)</h6>
+                        <div class="code-block-wrapper">
+<pre>HTTP/1.1 302 Found
+Location: /reports/download/42/
+Content-Type: application/pdf; filename="Crime_Intelligence_Report_42.pdf"</pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 8: Notifications -->
+        <div class="accordion-item card card-custom border mb-3 overflow-hidden" data-module="notifications">
+            <h2 class="accordion-header" id="headingNotifications">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNotifications" aria-expanded="false" aria-controls="collapseNotifications">
+                    <i class="bi bi-bell text-primary me-2 fs-5"></i>
+                    <span class="fw-bold me-2">Notifications Endpoints</span>
+                    <span class="tag-count ms-auto me-3">2 Endpoints</span>
+                </button>
+            </h2>
+            <div id="collapseNotifications" class="accordion-collapse collapse" aria-labelledby="headingNotifications">
+                <div class="accordion-body p-4 bg-light bg-opacity-25">
+
+                    <!-- Endpoint: GET /notifications/ -->
+                    <div class="endpoint-card p-3 mb-3" data-method="GET" data-path="/notifications/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/notifications/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/notifications/', 'GET', null, 'preview-notifications')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Retrieve system intelligence alerts, high-risk notifications, and automated pipeline triggers for the current analyst.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "unread_count": 3,
+  "notifications": [
+    {
+      "id": 14,
+      "title": "Anomaly Alert: Spiked Incident Rate",
+      "message": "Unusual 38% cluster elevation detected in Sector 7 during evening shift.",
+      "level": "warning",
+      "created_at": "2024-10-12T14:15:00Z",
+      "is_read": false
+    }
+  ]
+}</pre>
+                        </div>
+                        <div id="preview-notifications" class="response-preview-box"></div>
+                    </div>
+
+                    <!-- Endpoint: GET /notifications/api/unread-count/ -->
+                    <div class="endpoint-card p-3" data-method="GET" data-path="/notifications/api/unread-count/">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="method-badge method-badge-get">GET</span>
+                                <span class="endpoint-path">/notifications/api/unread-count/</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="auth-badge"><i class="bi bi-lock me-1"></i>Authenticated</span>
+                                <button class="btn btn-sm btn-outline-success try-it-btn" onclick="executeTryIt('/notifications/api/unread-count/', 'GET', null, 'preview-unread-count')">
+                                    <i class="bi bi-play-fill me-1"></i>Try it
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Lightweight polling endpoint to retrieve current unread notification counter for top navigation badges.</p>
+                        <h6 class="small fw-bold text-dark text-uppercase mb-2">Example Response Payload (200 OK)</h6>
+                        <div class="code-block-wrapper">
+<pre>{
+  "unread_count": 3
+}</pre>
+                        </div>
+                        <div id="preview-unread-count" class="response-preview-box"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search and filter endpoints
+    function filterEndpoints() {
+        const query = document.getElementById('endpointSearchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.endpoint-card');
+        const modules = document.querySelectorAll('.accordion-item');
+
+        cards.forEach(card => {
+            const path = card.getAttribute('data-path').toLowerCase();
+            const text = card.textContent.toLowerCase();
+            if (path.includes(query) || text.includes(query)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Hide or show accordion sections depending on whether they contain visible cards
+        modules.forEach(mod => {
+            const visibleChildCards = mod.querySelectorAll('.endpoint-card[style="display: block;"], .endpoint-card:not([style*="display: none"])');
+            if (visibleChildCards.length > 0) {
+                mod.style.display = 'block';
+            } else {
+                mod.style.display = 'none';
+            }
+        });
+    }
+
+    function filterByMethod(method) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === method) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        const cards = document.querySelectorAll('.endpoint-card');
+        cards.forEach(card => {
+            const cardMethod = card.getAttribute('data-method');
+            if (method === 'all' || cardMethod === method) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.accordion-item').forEach(mod => {
+            const visibleChildCards = mod.querySelectorAll('.endpoint-card[style="display: block;"], .endpoint-card:not([style*="display: none"])');
+            if (visibleChildCards.length > 0) {
+                mod.style.display = 'block';
+            } else {
+                mod.style.display = 'none';
+            }
+        });
+    }
+
+    function toggleAllAccordions(expand) {
+        const collapses = document.querySelectorAll('.accordion-collapse');
+        collapses.forEach(c => {
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(c);
+            if (expand) {
+                bsCollapse.show();
+            } else {
+                bsCollapse.hide();
+            }
+        });
+    }
+
+    // Interactive Try It execution
+    function executeTryIt(url, method, payload, previewId) {
+        const previewBox = document.getElementById(previewId);
+        if (!previewBox) return;
+
+        previewBox.style.display = 'block';
+        previewBox.innerHTML = `
+            <div class="d-flex align-items-center gap-2 text-primary small py-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span>Executing live request to <code>${url}</code>...</span>
+            </div>
+        `;
+
+        const options = {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, text/html, */*'
+            }
+        };
+
+        const startTime = performance.now();
+
+        fetch(url, options)
+            .then(async response => {
+                const duration = Math.round(performance.now() - startTime);
+                const status = response.status;
+                const statusText = response.statusText;
+                const contentType = response.headers.get('content-type') || '';
+
+                let bodyText = '';
+                let isJson = false;
+
+                if (contentType.includes('application/json')) {
+                    try {
+                        const json = await response.json();
+                        bodyText = JSON.stringify(json, null, 2);
+                        isJson = true;
+                    } catch (e) {
+                        bodyText = await response.text();
+                    }
+                } else {
+                    bodyText = await response.text();
+                    if (bodyText.length > 800) {
+                        bodyText = bodyText.substring(0, 800) + '\n\n... [Content truncated for display]';
+                    }
+                }
+
+                const statusBadgeClass = (status >= 200 && status < 300) ? 'bg-success' : (status >= 300 && status < 400 ? 'bg-info' : 'bg-danger');
+
+                previewBox.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${statusBadgeClass}">${status} ${statusText}</span>
+                            <span class="badge bg-light text-muted border">${duration} ms</span>
+                        </div>
+                        <button class="btn btn-sm btn-link text-decoration-none text-muted p-0" onclick="document.getElementById('${previewId}').style.display='none'">
+                            <i class="bi bi-x-circle me-1"></i>Dismiss
+                        </button>
+                    </div>
+                    <div class="code-block-wrapper">
+                        <pre>${escapeHtml(bodyText)}</pre>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                previewBox.innerHTML = `
+                    <div class="alert alert-danger py-2 px-3 small d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-exclamation-triangle-fill me-2"></i>Network Error: ${escapeHtml(err.message)}</span>
+                        <button class="btn btn-sm btn-link text-danger p-0" onclick="document.getElementById('${previewId}').style.display='none'">Close</button>
+                    </div>
+                `;
+            });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+</script>
+{% endblock %}

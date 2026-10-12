@@ -8,32 +8,34 @@
     <!-- Filter Control Strip -->
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
-            <form method="GET" action="/visualization/" class="row g-2 align-items-center">
+            <form method="GET" action="/visualization/" class="row g-2 align-items-center" id="vizFilterForm">
                 <div class="col-md-3">
-                    <select name="jurisdiction" class="form-select form-select-sm">
-                        <option value="">All Jurisdictions</option>
-                        <option value="1">Central Ward</option>
-                        <option value="2">North Ward</option>
-                        <option value="3">South Ward</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select name="category" class="form-select form-select-sm">
+                    <select name="category" class="form-select form-select-sm" id="vizCategoryFilter">
                         <option value="">All Crime Categories</option>
-                        <option value="theft">Theft &amp; Robbery</option>
-                        <option value="assault">Violent Offenses</option>
-                        <option value="burglary">Property Crimes</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select name="timeframe" class="form-select form-select-sm">
-                        <option value="ytd" selected>Year to Date (2024)</option>
-                        <option value="last_quarter">Last Quarter</option>
-                        <option value="3_years">Past 3 Years</option>
+                    <select name="location" class="form-select form-select-sm" id="vizLocationFilter">
+                        <option value="">All Locations</option>
+                        {% for loc in locations %}
+                            <option value="{{ loc.id }}">{{ loc.name }}, {{ loc.city }}</option>
+                        {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary-blue w-100">
+                <div class="col-md-2">
+                    <select name="severity" class="form-select form-select-sm" id="vizSeverityFilter">
+                        <option value="">All Severities</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-primary-blue w-100" id="applyVizFilter">
                         <i class="bi bi-funnel me-1"></i> Apply Filter
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print Dashboard">
@@ -61,7 +63,7 @@
             </div>
         </div>
 
-        <!-- Chart 2: Line Chart (Seasonal Monthly Trends) -->
+        <!-- Chart 2: Line Chart (Monthly Trends) -->
         <div class="col-md-6 col-lg-4">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
@@ -91,7 +93,7 @@
             </div>
         </div>
 
-        <!-- Chart 4: Stacked Bar Chart (Day of Week vs Category) -->
+        <!-- Chart 4: Day of Week Distribution -->
         <div class="col-md-6 col-lg-4">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
@@ -106,11 +108,11 @@
             </div>
         </div>
 
-        <!-- Chart 5: Trend Comparison (Annual Multi-Year) -->
+        <!-- Chart 5: Yearly Comparison -->
         <div class="col-md-6 col-lg-4">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
-                    <h6 class="card-title-custom">5. Three-Year Trend Trajectory</h6>
+                    <h6 class="card-title-custom">5. Year-over-Year Comparison</h6>
                     <button class="btn btn-sm btn-link text-muted p-0" onclick="downloadChart('chart5')"><i class="bi bi-download"></i></button>
                 </div>
                 <div class="card-body p-3">
@@ -121,11 +123,11 @@
             </div>
         </div>
 
-        <!-- Chart 6: Geographic Summary Horizontal Bar Chart -->
+        <!-- Chart 6: Geographic Summary -->
         <div class="col-md-6 col-lg-4">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
-                    <h6 class="card-title-custom">6. District Density Summary</h6>
+                    <h6 class="card-title-custom">6. Top Locations by Crime Volume</h6>
                     <button class="btn btn-sm btn-link text-muted p-0" onclick="downloadChart('chart6')"><i class="bi bi-download"></i></button>
                 </div>
                 <div class="card-body p-3">
@@ -141,78 +143,185 @@
 
 {% block extra_js %}
 <script>
+    // Parse backend data passed from Django view
+    const catFreqData = {{ cat_freq_json|safe }};
+    const monthlyData = {{ monthly_trends_json|safe }};
+    const yearlyData = {{ yearly_trends_json|safe }};
+    const temporalData = {{ temporal_json|safe }};
+    const severityData = {{ severity_json|safe }};
+
+    // Store chart instances for dynamic updates
+    const chartInstances = {};
+
     document.addEventListener("DOMContentLoaded", () => {
-        // Chart 1: Bar
-        new Chart(document.getElementById('chart1'), {
+        // Chart 1: Bar (Category Frequency) — from backend
+        chartInstances['chart1'] = new Chart(document.getElementById('chart1'), {
             type: 'bar',
             data: {
-                labels: ['Theft', 'Burglary', 'Assault', 'Vehicle', 'Fraud'],
-                datasets: [{ data: [420, 290, 210, 180, 95], backgroundColor: '#1769FF', borderRadius: 4 }]
+                labels: catFreqData.labels || [],
+                datasets: [{
+                    data: catFreqData.data || [],
+                    backgroundColor: catFreqData.colors || '#1769FF',
+                    borderRadius: 4
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
         });
 
-        // Chart 2: Line
-        new Chart(document.getElementById('chart2'), {
+        // Chart 2: Line (Monthly Trends) — from backend
+        chartInstances['chart2'] = new Chart(document.getElementById('chart2'), {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-                datasets: [{ data: [89, 92, 110, 108, 115, 122, 119, 114, 106, 112], borderColor: '#20D5F5', tension: 0.35, fill: false }]
+                labels: monthlyData.labels || [],
+                datasets: [{
+                    label: 'Monthly Crime Count',
+                    data: monthlyData.data || [],
+                    borderColor: '#20D5F5',
+                    backgroundColor: 'rgba(32, 213, 245, 0.1)',
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#071B3A',
+                    pointRadius: 4
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: '#F1F5F9' } } }
+            }
         });
 
-        // Chart 3: Doughnut
-        new Chart(document.getElementById('chart3'), {
+        // Chart 3: Doughnut (Severity) — from backend
+        chartInstances['chart3'] = new Chart(document.getElementById('chart3'), {
             type: 'doughnut',
             data: {
-                labels: ['Critical', 'High', 'Medium', 'Low'],
-                datasets: [{ data: [15, 30, 40, 15], backgroundColor: ['#EF4444', '#F59E0B', '#1769FF', '#16A36A'], borderWidth: 0 }]
+                labels: severityData.labels || ['Critical', 'High', 'Medium', 'Low'],
+                datasets: [{
+                    data: severityData.data || [0, 0, 0, 0],
+                    backgroundColor: severityData.colors || ['#EF4444', '#F59E0B', '#1769FF', '#16A36A'],
+                    borderWidth: 0
+                }]
             },
             options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
         });
 
-        // Chart 4: Stacked Bar
-        new Chart(document.getElementById('chart4'), {
+        // Chart 4: Bar (Day of Week) — from backend temporal patterns
+        const dowData = temporalData.day_of_week || {};
+        chartInstances['chart4'] = new Chart(document.getElementById('chart4'), {
             type: 'bar',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [
-                    { label: 'Violent', data: [12, 14, 11, 15, 28, 35, 30], backgroundColor: '#EF4444' },
-                    { label: 'Property', data: [25, 22, 28, 26, 32, 40, 34], backgroundColor: '#102B52' }
-                ]
+                labels: dowData.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Incidents by Day',
+                    data: dowData.data || [0, 0, 0, 0, 0, 0, 0],
+                    backgroundColor: '#102B52',
+                    borderRadius: 4
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
         });
 
-        // Chart 5: Line Trend
-        new Chart(document.getElementById('chart5'), {
-            type: 'line',
-            data: {
-                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [
-                    { label: '2023', data: [310, 340, 325, 360], borderColor: '#94A3B8' },
-                    { label: '2024', data: [290, 315, 305, 320], borderColor: '#16A36A' }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // Chart 6: Horizontal Bar
-        new Chart(document.getElementById('chart6'), {
+        // Chart 5: Bar (Yearly Comparison) — from backend
+        chartInstances['chart5'] = new Chart(document.getElementById('chart5'), {
             type: 'bar',
             data: {
-                labels: ['Central', 'North', 'South', 'East', 'West'],
-                datasets: [{ data: [380, 260, 210, 190, 140], backgroundColor: '#20D5F5', borderRadius: 4 }]
+                labels: yearlyData.labels || [],
+                datasets: [{
+                    label: 'Total Incidents',
+                    data: yearlyData.data || [],
+                    backgroundColor: ['#94A3B8', '#64748B', '#102B52', '#16A36A'],
+                    borderRadius: 6
+                }]
             },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
+        });
+
+        // Chart 6: Horizontal Bar (Location Density) — from category freq as location proxy
+        const locationLabels = catFreqData.labels ? catFreqData.labels.slice(0, 8) : [];
+        const locationValues = catFreqData.data ? catFreqData.data.slice(0, 8) : [];
+        chartInstances['chart6'] = new Chart(document.getElementById('chart6'), {
+            type: 'bar',
+            data: {
+                labels: locationLabels,
+                datasets: [{
+                    data: locationValues,
+                    backgroundColor: '#20D5F5',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // AJAX filter handler
+        document.getElementById('applyVizFilter').addEventListener('click', () => {
+            const category = document.getElementById('vizCategoryFilter').value;
+            const location = document.getElementById('vizLocationFilter').value;
+            const severity = document.getElementById('vizSeverityFilter').value;
+
+            const params = new URLSearchParams();
+            if (category) params.set('category', category);
+            if (location) params.set('location', location);
+            if (severity) params.set('severity', severity);
+
+            fetch(`/visualization/api/data/?${params.toString()}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update Chart 1 (Category)
+                    const cf = data.category_freq;
+                    chartInstances['chart1'].data.labels = cf.labels || [];
+                    chartInstances['chart1'].data.datasets[0].data = cf.data || [];
+                    chartInstances['chart1'].update();
+
+                    // Update Chart 2 (Monthly)
+                    const mt = data.monthly_trends;
+                    chartInstances['chart2'].data.labels = mt.labels || [];
+                    chartInstances['chart2'].data.datasets[0].data = mt.data || [];
+                    chartInstances['chart2'].update();
+
+                    // Update Chart 3 (Severity)
+                    const sv = data.severity;
+                    chartInstances['chart3'].data.datasets[0].data = sv.data || [];
+                    chartInstances['chart3'].update();
+
+                    // Update Chart 4 (Day of Week)
+                    const tp = data.temporal?.day_of_week || {};
+                    chartInstances['chart4'].data.labels = tp.labels || [];
+                    chartInstances['chart4'].data.datasets[0].data = tp.data || [];
+                    chartInstances['chart4'].update();
+                }
+            })
+            .catch(err => console.error('Filter error:', err));
         });
     });
 
     function downloadChart(canvasId) {
         const canvas = document.getElementById(canvasId);
         const link = document.createElement('a');
-        link.download = `${canvasId}.png`;
+        link.download = `${canvasId}_chart.png`;
         link.href = canvas.toDataURL();
         link.click();
     }

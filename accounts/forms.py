@@ -140,10 +140,11 @@ class ProfileForm(forms.ModelForm):
     """Form for updating user profile details."""
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'phone', 'organization', 'bio', 'avatar', 'email_notifications']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'organization', 'bio', 'avatar', 'email_notifications']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
             'organization': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Organization / Police Dept'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Short professional bio'}),

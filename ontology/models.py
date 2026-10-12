@@ -79,6 +79,8 @@ class OntologyFact(models.Model):
     )
     literal_value = models.CharField(max_length=500, null=True, blank=True)
     source_record_id = models.IntegerField(null=True, blank=True, help_text='Optional reference to CrimeRecord ID')
+    is_inferred = models.BooleanField(default=False, help_text='True if derived by SWRL / semantic reasoner')
+    inference_rule = models.CharField(max_length=150, null=True, blank=True, help_text='Name of SWRL rule that generated this fact')
 
     class Meta:
         verbose_name = 'Ontology Fact'

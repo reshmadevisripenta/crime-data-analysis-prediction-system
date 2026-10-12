@@ -431,7 +431,18 @@
                 <i class="bi bi-file-earmark-text"></i>
                 <span>Reports</span>
             </a>
+            <a href="/api-docs/" class="nav-sidebar-link {% if '/api-docs/' in request.path %}active{% endif %}">
+                <i class="bi bi-code-slash"></i>
+                <span>API Docs</span>
+            </a>
+            {% if user.is_admin %}
+            <a href="/audit-log/" class="nav-sidebar-link {% if '/audit-log/' in request.path %}active{% endif %}">
+                <i class="bi bi-shield-lock"></i>
+                <span>Audit Log</span>
+            </a>
+            {% endif %}
             <a href="/notifications/" class="nav-sidebar-link {% if '/notifications/' in request.path %}active{% endif %}">
+
                 <i class="bi bi-bell"></i>
                 <span>Notifications</span>
                 {% if unread_notifications_count %}
@@ -448,10 +459,13 @@
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
-            <a href="/accounts/logout/" class="nav-sidebar-link text-danger mt-2">
-                <i class="bi bi-box-arrow-right text-danger"></i>
-                <span>Sign Out</span>
-            </a>
+            <form method="POST" action="/accounts/logout/" id="logoutForm" style="margin:0;">
+                {% csrf_token %}
+                <a href="#" class="nav-sidebar-link text-danger mt-2" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                    <i class="bi bi-box-arrow-right text-danger"></i>
+                    <span>Sign Out</span>
+                </a>
+            </form>
         </div>
     </aside>
 
