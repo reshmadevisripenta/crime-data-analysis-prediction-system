@@ -19,7 +19,7 @@
         border-radius: 20px;
         box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
         width: 100%;
-        max-width: 500px;
+        max-width: 520px;
         padding: 2.5rem 2.25rem;
         position: relative;
         z-index: 2;
@@ -43,6 +43,13 @@
         border-color: var(--primary-blue);
         box-shadow: 0 0 0 0.25rem rgba(23, 105, 255, 0.15);
     }
+
+    .field-error-feedback {
+        display: block;
+        font-size: 0.8125rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+    }
 </style>
 {% endblock %}
 
@@ -57,19 +64,16 @@
             <p class="text-muted small mb-4">Register for operational crime predictive analytics access</p>
         </div>
 
-        {% if form.errors %}
+        {% if form.non_field_errors %}
         <div class="alert alert-danger py-2 small border-0 mb-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i> Please correct the highlighted errors below.
-            <ul class="mb-0 mt-1 ps-3">
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            {% for error in form.non_field_errors %}
+                <span>{{ error }}</span>{% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+        </div>
+        {% elif form.errors %}
+        <div class="alert alert-danger py-2 small border-0 mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Registration failed. Please correct the highlighted errors below.
         </div>
         {% endif %}
 
@@ -79,49 +83,69 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="id_first_name" class="form-label small fw-semibold text-secondary">First Name</label>
-                    <input type="text" name="first_name" class="form-control" id="id_first_name" placeholder="John" required>
+                    <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" id="id_first_name" placeholder="John" value="{{ form.first_name.value|default:'' }}" required>
+                    {% for error in form.first_name.errors %}
+                        <div class="field-error-feedback">{{ error }}</div>
+                    {% endfor %}
                 </div>
                 <div class="col-6">
                     <label for="id_last_name" class="form-label small fw-semibold text-secondary">Last Name</label>
-                    <input type="text" name="last_name" class="form-control" id="id_last_name" placeholder="Doe" required>
+                    <input type="text" name="last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" id="id_last_name" placeholder="Doe" value="{{ form.last_name.value|default:'' }}">
+                    {% for error in form.last_name.errors %}
+                        <div class="field-error-feedback">{{ error }}</div>
+                    {% endfor %}
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="id_username" class="form-label small fw-semibold text-secondary">Username</label>
-                <div class="input-group">
+                <div class="input-group has-validation">
                     <span class="input-group-text bg-light text-muted"><i class="bi bi-at"></i></span>
-                    <input type="text" name="username" class="form-control" id="id_username" placeholder="johndoe_analyst" required>
+                    <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="id_username" placeholder="johndoe_analyst" value="{{ form.username.value|default:'' }}" required>
                 </div>
+                {% for error in form.username.errors %}
+                    <div class="field-error-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
 
             <div class="mb-3">
                 <label for="id_email" class="form-label small fw-semibold text-secondary">Department Email</label>
-                <div class="input-group">
+                <div class="input-group has-validation">
                     <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
-                    <input type="email" name="email" class="form-control" id="id_email" placeholder="john.doe@police.gov" required>
+                    <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="id_email" placeholder="john.doe@police.gov" value="{{ form.email.value|default:'' }}" required>
                 </div>
+                {% for error in form.email.errors %}
+                    <div class="field-error-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
 
             <div class="mb-3">
                 <label for="id_role" class="form-label small fw-semibold text-secondary">Role Classification</label>
-                <select name="role" class="form-select" id="id_role" required>
-                    <option value="analyst" selected>Crime Analyst (Intelligence &amp; Modeling)</option>
-                    <option value="officer">Police Officer (Field Operations)</option>
-                    <option value="viewer">Viewer / Public Auditor (Read-Only)</option>
-                    <option value="admin">Administrator (Full Access)</option>
+                <select name="role" class="form-select {% if form.role.errors %}is-invalid{% endif %}" id="id_role" required>
+                    <option value="analyst" {% if form.role.value == 'analyst' or not form.role.value %}selected{% endif %}>Crime Analyst (Intelligence &amp; Modeling)</option>
+                    <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Administrator (Full Access)</option>
+                    <option value="viewer" {% if form.role.value == 'viewer' %}selected{% endif %}>Viewer / Public Auditor (Read-Only)</option>
                 </select>
                 <div class="form-text small" style="font-size: 0.75rem;">Determines model modification and data upload permissions.</div>
+                {% for error in form.role.errors %}
+                    <div class="field-error-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
 
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="id_password1" class="form-label small fw-semibold text-secondary">Password</label>
-                    <input type="password" name="password1" class="form-control" id="id_password1" placeholder="••••••••" required>
+                    <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" id="id_password1" placeholder="••••••••" required>
+                    {% for error in form.password1.errors %}
+                        <div class="field-error-feedback">{{ error }}</div>
+                    {% endfor %}
                 </div>
                 <div class="col-6">
                     <label for="id_password2" class="form-label small fw-semibold text-secondary">Confirm Password</label>
-                    <input type="password" name="password2" class="form-control" id="id_password2" placeholder="••••••••" required>
+                    <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" id="id_password2" placeholder="••••••••" required>
+                    {% for error in form.password2.errors %}
+                        <div class="field-error-feedback">{{ error }}</div>
+                    {% endfor %}
                 </div>
             </div>
 

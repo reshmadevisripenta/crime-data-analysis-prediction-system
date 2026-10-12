@@ -139,6 +139,23 @@ class TestRegisterView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'password2', 'Passwords do not match.')
 
+    def test_registration_with_first_and_last_name(self):
+        response = self.client.post(reverse('accounts:register'), {
+            'first_name': 'Jane',
+            'last_name': 'Investigator',
+            'username': 'jane_inv',
+            'email': 'jane.inv@example.com',
+            'role': 'analyst',
+            'password1': 'StrongPass123!',
+            'password2': 'StrongPass123!'
+        })
+        self.assertRedirects(response, reverse('accounts:login'))
+        user = User.objects.get(username='jane_inv')
+        self.assertEqual(user.first_name, 'Jane')
+        self.assertEqual(user.last_name, 'Investigator')
+        self.assertEqual(user.role, 'analyst')
+        self.assertTrue(user.check_password('StrongPass123!'))
+
 
 class TestProfileView(TestCase):
     def setUp(self):

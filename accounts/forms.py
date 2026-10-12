@@ -57,9 +57,25 @@ class LoginForm(forms.Form):
 
 class RegisterForm(forms.ModelForm):
     """Form for new user registration."""
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'First Name'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Last Name'
+        })
+    )
     full_name = forms.CharField(
         max_length=150,
-        required=True,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Full Name'
@@ -78,6 +94,14 @@ class RegisterForm(forms.ModelForm):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Username'
+        })
+    )
+    role = forms.ChoiceField(
+        choices=User.ROLE_CHOICES,
+        required=False,
+        initial='viewer',
+        widget=forms.Select(attrs={
+            'class': 'form-select'
         })
     )
     password1 = forms.CharField(
@@ -119,18 +143,41 @@ class RegisterForm(forms.ModelForm):
         p2 = cleaned_data.get('password2')
         if p1 and p2 and p1 != p2:
             self.add_error('password2', "Passwords do not match.")
+
+        # Ensure either first_name/last_name or full_name is present
+        fn = (cleaned_data.get('first_name') or '').strip()
+        ln = (cleaned_data.get('last_name') or '').strip()
+        fullname = (cleaned_data.get('full_name') or '').strip()
+
+        if not fn and not fullname:
+            self.add_error('first_name', "Please enter your first name or full name.")
+
         return cleaned_data
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
-        full_name = self.cleaned_data.get('full_name', '').strip()
-        if ' ' in full_name:
-            user.first_name, user.last_name = full_name.split(' ', 1)
+
+        fn = (self.cleaned_data.get('first_name') or '').strip()
+        ln = (self.cleaned_data.get('last_name') or '').strip()
+        fullname = (self.cleaned_data.get('full_name') or '').strip()
+
+        if fn or ln:
+            user.first_name = fn
+            user.last_name = ln
+        elif fullname:
+            if ' ' in fullname:
+                user.first_name, user.last_name = fullname.split(' ', 1)
+            else:
+                user.first_name = fullname
+                user.last_name = ''
+
+        role = self.cleaned_data.get('role')
+        if role in dict(User.ROLE_CHOICES):
+            user.role = role
         else:
-            user.first_name = full_name
-            user.last_name = ''
-        user.role = 'viewer'
+            user.role = 'viewer'
+
         if commit:
             user.save()
         return user
