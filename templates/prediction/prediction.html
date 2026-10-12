@@ -5,39 +5,54 @@
 
 {% block content %}
 <div class="container-fluid p-0">
+    <!-- Top Row: ML Forecasting Engine -->
     <div class="row g-4 mb-4">
         <!-- Prediction Configuration Form Panel -->
         <div class="col-lg-5">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
                     <div>
-                        <h5 class="card-title-custom"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Forecast Query Parameters</h5>
-                        <small class="text-muted">Target jurisdiction and time horizon</small>
+                        <h5 class="card-title-custom"><i class="bi bi-graph-up-arrow text-primary me-2"></i>ML Forecast Parameters</h5>
+                        <small class="text-muted">Target jurisdiction, model &amp; time horizon</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="/prediction/predict/" id="predictionForm">
+                    <form id="predictionForm">
                         {% csrf_token %}
+
+                        <!-- Model Selection -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Trained Machine Learning Model *</label>
+                            <select name="model_id" id="mlModelSelect" class="form-select" required>
+                                {% for m in models %}
+                                    <option value="{{ m.id }}" {% if forloop.first %}selected{% endif %}>
+                                        {{ m.name }} ({{ m.get_algorithm_display }})
+                                    </option>
+                                {% empty %}
+                                    <option value="">No models available - Train one first</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
                         <!-- Location Select -->
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-secondary">Target Jurisdiction / Hotspot *</label>
-                            <select name="location" class="form-select" required>
-                                <option value="1" selected>7th Ave Central Station (Central Metro)</option>
-                                <option value="2">West Industrial Terminal (North)</option>
-                                <option value="3">South Highway Junction (South)</option>
-                                <option value="4">Eastern Boulevard Promenade (East)</option>
+                            <label class="form-label small fw-semibold text-secondary">Target Jurisdiction / Hotspot</label>
+                            <select name="location_id" id="mlLocationSelect" class="form-select">
+                                <option value="">All Jurisdictions (Consolidated)</option>
+                                {% for loc in locations %}
+                                    <option value="{{ loc.id }}">{{ loc.city }} - {{ loc.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
                         <!-- Category Select -->
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-secondary">Offense Category *</label>
-                            <select name="category" class="form-select" required>
-                                <option value="theft" selected>Theft &amp; Armed Robbery</option>
-                                <option value="burglary">Commercial &amp; Residential Burglary</option>
-                                <option value="vehicle">Motor Vehicle Theft</option>
-                                <option value="assault">Aggravated Assault</option>
+                            <label class="form-label small fw-semibold text-secondary">Offense Category</label>
+                            <select name="category_id" id="mlCategorySelect" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
@@ -45,26 +60,16 @@
                         <div class="mb-4">
                             <label class="form-label small fw-semibold text-secondary d-block mb-2">Forecast Horizon Window *</label>
                             <div class="d-flex flex-column gap-2">
+                                {% for code, label in forecast_periods %}
                                 <div class="form-check p-2 border rounded bg-light">
-                                    <input class="form-check-input" type="radio" name="forecast_period" id="p1" value="7_days">
-                                    <label class="form-check-label small fw-semibold" for="p1">Next 7 Days (Tactical Patrol Forecast)</label>
+                                    <input class="form-check-input" type="radio" name="forecast_period" id="fp_{{ code }}" value="{{ code }}" {% if code == '3_months' or forloop.first %}checked{% endif %}>
+                                    <label class="form-check-label small fw-semibold" for="fp_{{ code }}">{{ label }}</label>
                                 </div>
-                                <div class="form-check p-2 border rounded bg-light">
-                                    <input class="form-check-input" type="radio" name="forecast_period" id="p2" value="14_days">
-                                    <label class="form-check-label small fw-semibold" for="p2">Next 14 Days (Bi-Weekly Allocation)</label>
-                                </div>
-                                <div class="form-check p-2 border rounded bg-light">
-                                    <input class="form-check-input" type="radio" name="forecast_period" id="p3" value="30_days" checked>
-                                    <label class="form-check-label small fw-semibold" for="p3">Next 30 Days (Monthly Resource Planning)</label>
-                                </div>
-                                <div class="form-check p-2 border rounded bg-light">
-                                    <input class="form-check-input" type="radio" name="forecast_period" id="p4" value="90_days">
-                                    <label class="form-check-label small fw-semibold" for="p4">Next Quarter / 90 Days (Strategic Outlook)</label>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary-blue w-100 py-2 fs-6">
+                        <button type="submit" id="runMlForecastBtn" class="btn btn-primary w-100 py-2 fs-6">
                             <i class="bi bi-cpu me-2"></i> Compute Predictive Projection
                         </button>
                     </form>
@@ -77,21 +82,21 @@
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
                     <div>
-                        <h5 class="card-title-custom">Model Output &amp; Trajectory Forecast</h5>
-                        <small class="text-muted">Generated by RandomForest_v2.4_Prod</small>
+                        <h5 class="card-title-custom" id="mlOutputTitle">Model Output &amp; Trajectory Forecast</h5>
+                        <small class="text-muted" id="mlOutputSubtitle">Supervised Regression Model</small>
                     </div>
-                    <span class="badge bg-success-subtle text-success">93.4% Confidence</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle" id="confidenceBadge">95% Confidence Interval</span>
                 </div>
                 <div class="card-body p-4">
                     <!-- Predicted Count Callout Box -->
                     <div class="p-4 rounded-4 bg-light border text-center mb-4">
-                        <small class="text-uppercase fw-semibold text-muted tracking-wider">Projected Incident Frequency (Next 30 Days)</small>
-                        <div class="display-4 fw-bold text-navy my-2">
-                            48 <span class="fs-4 text-muted fw-normal">± 4 cases</span>
+                        <small class="text-uppercase fw-semibold text-muted tracking-wider" id="calloutPeriod">Projected Cumulative Incident Volume</small>
+                        <div class="display-4 fw-bold text-navy my-2" id="calloutCount">
+                            -- <span class="fs-4 text-muted fw-normal" id="calloutMargin">cases</span>
                         </div>
                         <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white rounded-pill border small">
-                            <span class="badge bg-danger">Critical Risk</span>
-                            <span class="text-secondary">Expected Range: 44 to 52 incidents</span>
+                            <span class="badge bg-primary" id="calloutRisk">Projection</span>
+                            <span class="text-secondary" id="calloutRange">Run projection to view interval</span>
                         </div>
                     </div>
 
@@ -110,7 +115,65 @@
         </div>
     </div>
 
-    <!-- Past Predictions Table -->
+    <!-- Middle Row: Dedicated ARIMA Time Series Forecasting Section -->
+    <div class="card card-custom mb-4 border-primary">
+        <div class="card-header-custom bg-light">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity text-primary fs-5"></i>
+                <div>
+                    <h5 class="card-title-custom mb-0">ARIMA Time-Series Stochastic Forecaster</h5>
+                    <small class="text-muted">AutoRegressive Integrated Moving Average (p, d, q) Modeling</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary border" id="arimaOrderBadge">ARIMA(1,1,1)</span>
+                <span class="badge bg-secondary-subtle text-secondary border" id="arimaAicBadge">AIC: --</span>
+                <span class="badge bg-secondary-subtle text-secondary border" id="arimaBicBadge">BIC: --</span>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <!-- Parameter Controls Row -->
+            <form id="arimaForm" class="row g-3 align-items-end mb-4 p-3 bg-light rounded-3 border">
+                <div class="col-md-2 col-6">
+                    <label class="form-label small fw-bold">AR Lag (p)</label>
+                    <input type="number" id="arimaP" class="form-control form-control-sm" value="1" min="0" max="5">
+                </div>
+                <div class="col-md-2 col-6">
+                    <label class="form-label small fw-bold">Differencing (d)</label>
+                    <input type="number" id="arimaD" class="form-control form-control-sm" value="1" min="0" max="2">
+                </div>
+                <div class="col-md-2 col-6">
+                    <label class="form-label small fw-bold">MA Order (q)</label>
+                    <input type="number" id="arimaQ" class="form-control form-control-sm" value="1" min="0" max="5">
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small fw-bold">Forecast Horizon</label>
+                    <select id="arimaPeriods" class="form-select form-select-sm">
+                        <option value="3">3 Months Out</option>
+                        <option value="6" selected>6 Months Out</option>
+                        <option value="9">9 Months Out</option>
+                        <option value="12">12 Months (1 Year)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-12">
+                    <button type="submit" id="runArimaBtn" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-play-circle-fill me-1"></i> Fit ARIMA &amp; Forecast
+                    </button>
+                </div>
+            </form>
+
+            <!-- ARIMA Interactive Chart -->
+            <div style="height: 300px;" class="position-relative">
+                <canvas id="arimaChart"></canvas>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                <span><i class="bi bi-info-circle me-1"></i> Historical points (solid navy) + ARIMA projected trajectory (dashed teal) + 95% confidence interval envelope (light teal).</span>
+                <span id="arimaObsCount" class="fw-semibold">25 historical months evaluated</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row: Prediction Archive & Validation Log -->
     <div class="card card-custom">
         <div class="card-header-custom">
             <h5 class="card-title-custom">Prediction Archive &amp; Validation Log</h5>
@@ -130,44 +193,22 @@
                             <th class="pe-4 text-end">Date Executed</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="pastPredictionsTbody">
                         {% if past_predictions %}
                             {% for pred in past_predictions %}
                             <tr>
-                                <td class="ps-4 fw-semibold">{{ pred.location }}</td>
-                                <td>{{ pred.category }}</td>
-                                <td>{{ pred.period }}</td>
+                                <td class="ps-4 fw-semibold">{{ pred.location|default:"Consolidated" }}</td>
+                                <td>{{ pred.category|default:"All Offenses" }}</td>
+                                <td>{{ pred.get_forecast_period_display }}</td>
                                 <td class="fw-bold text-navy">{{ pred.predicted_count }}</td>
-                                <td><span class="badge bg-success-subtle text-success">92%</span></td>
-                                <td>{{ pred.model_name|default:"RandomForest" }}</td>
-                                <td class="pe-4 text-end text-muted">{{ pred.created_at|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-success-subtle text-success">[{{ pred.lower_bound|default:"--" }} - {{ pred.upper_bound|default:"--" }}]</span></td>
+                                <td>{{ pred.model.name|default:"ML Regressor" }}</td>
+                                <td class="pe-4 text-end text-muted">{{ pred.prediction_date|date:"M d, Y" }}</td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td class="ps-4 fw-semibold">7th Ave Central Station</td>
-                                <td>Theft &amp; Robbery</td>
-                                <td>Next 30 Days</td>
-                                <td class="fw-bold text-navy fs-6">48</td>
-                                <td><span class="badge bg-success-subtle text-success">93.4%</span></td>
-                                <td>Random Forest Regressor</td>
-                                <td class="pe-4 text-end text-muted">Today 09:30</td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4 fw-semibold">West Industrial Terminal</td>
-                                <td>Commercial Burglary</td>
-                                <td>Next 14 Days</td>
-                                <td class="fw-bold text-navy fs-6">19</td>
-                                <td><span class="badge bg-success-subtle text-success">89.8%</span></td>
-                                <td class="pe-4 text-end text-muted">Yesterday</td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4 fw-semibold">South Highway Junction</td>
-                                <td>Vehicle Theft</td>
-                                <td>Next 60 Days</td>
-                                <td class="fw-bold text-navy fs-6">62</td>
-                                <td><span class="badge bg-success-subtle text-success">91.0%</span></td>
-                                <td class="pe-4 text-end text-muted">Oct 09, 2024</td>
+                                <td colspan="7" class="text-center py-4 text-muted">No historical predictions logged yet.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -180,27 +221,42 @@
 
 {% block extra_js %}
 <script>
+    let mlChartInstance = null;
+    let arimaChartInstance = null;
+
     document.addEventListener("DOMContentLoaded", () => {
-        const ctx = document.getElementById('predictionChart').getContext('2d');
-        new Chart(ctx, {
+        // --- 1. INITIALIZE ML TRAJECTORY CHART ---
+        const mlCtx = document.getElementById('predictionChart').getContext('2d');
+        mlChartInstance = new Chart(mlCtx, {
             type: 'line',
             data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4 (Current)', 'Week +1 (Pred)', 'Week +2 (Pred)', 'Week +3 (Pred)', 'Week +4 (Pred)'],
+                labels: ['Month +1', 'Month +2', 'Month +3', 'Month +4', 'Month +5', 'Month +6'],
                 datasets: [
                     {
-                        label: 'Historical Actuals',
-                        data: [11, 14, 12, 13, null, null, null, null],
+                        label: 'Projected Monthly Incidents',
+                        data: [1.2, 1.1, 1.3, 1.0, 1.2, 1.1],
                         borderColor: '#1769FF',
                         backgroundColor: 'rgba(23, 105, 255, 0.1)',
                         pointRadius: 4,
+                        fill: true,
                         tension: 0.3
                     },
                     {
-                        label: 'Projected Trajectory',
-                        data: [null, null, null, 13, 11, 13, 12, 12],
-                        borderColor: '#20D5F5',
-                        borderDash: [5, 5],
-                        pointRadius: 4,
+                        label: 'Upper Confidence Bound',
+                        data: [1.4, 1.3, 1.5, 1.2, 1.4, 1.3],
+                        borderColor: 'rgba(32, 213, 245, 0.4)',
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Lower Confidence Bound',
+                        data: [1.0, 0.9, 1.1, 0.8, 1.0, 0.9],
+                        borderColor: 'rgba(32, 213, 245, 0.4)',
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false,
                         tension: 0.3
                     }
                 ]
@@ -209,11 +265,192 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: false, grid: { color: '#F1F5F9' } },
+                    y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
                     x: { grid: { display: false } }
                 }
             }
         });
+
+        // --- 2. ML FORECAST SUBMIT HANDLER ---
+        const predictionForm = document.getElementById('predictionForm');
+        predictionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('runMlForecastBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Computing...';
+
+            const formData = new FormData(predictionForm);
+
+            try {
+                const res = await fetch('/prediction/forecast/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    // Update Callout Box
+                    document.getElementById('calloutCount').innerHTML = `${data.predicted_count} <span class="fs-4 text-muted fw-normal">incidents</span>`;
+                    document.getElementById('calloutRange').textContent = `Expected Bounds: ${data.lower_bound} to ${data.upper_bound}`;
+                    document.getElementById('mlOutputSubtitle').textContent = `${data.location} | ${data.category} (${data.forecast_period})`;
+
+                    // Update Chart Data
+                    if (data.chart_data && data.chart_data.labels) {
+                        mlChartInstance.data.labels = data.chart_data.labels;
+                        mlChartInstance.data.datasets[0].data = data.chart_data.predictions;
+                        mlChartInstance.data.datasets[1].data = data.chart_data.upper_bounds;
+                        mlChartInstance.data.datasets[2].data = data.chart_data.lower_bounds;
+                        mlChartInstance.update();
+                    }
+                } else {
+                    alert('Forecasting failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Request failed. Check server connection.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cpu me-2"></i> Compute Predictive Projection';
+            }
+        });
+
+        // --- 3. INITIALIZE ARIMA CHART ---
+        const arimaCtx = document.getElementById('arimaChart').getContext('2d');
+        arimaChartInstance = new Chart(arimaCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Historical Actual Incidents',
+                        data: [],
+                        borderColor: '#0F172A',
+                        backgroundColor: '#0F172A',
+                        pointRadius: 3,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'ARIMA Forecast Trajectory',
+                        data: [],
+                        borderColor: '#1769FF',
+                        backgroundColor: 'rgba(23, 105, 255, 0.1)',
+                        borderDash: [5, 4],
+                        pointRadius: 4,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Upper Bound (95%)',
+                        data: [],
+                        borderColor: 'rgba(32, 213, 245, 0.4)',
+                        backgroundColor: 'rgba(32, 213, 245, 0.08)',
+                        fill: '+1',
+                        pointRadius: 0,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Lower Bound (95%)',
+                        data: [],
+                        borderColor: 'rgba(32, 213, 245, 0.4)',
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.raw !== null ? `${ctx.dataset.label}: ${ctx.raw}` : null;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#F1F5F9' }, title: { display: true, text: 'Monthly Incidents' } },
+                    x: { grid: { color: '#F8FAFC' }, ticks: { maxRotation: 45, minRotation: 45 } }
+                }
+            }
+        });
+
+        // --- 4. ARIMA FETCH & RENDER FUNCTION ---
+        async function loadArimaForecast() {
+            const btn = document.getElementById('runArimaBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Fitting...';
+
+            const p = document.getElementById('arimaP').value;
+            const d = document.getElementById('arimaD').value;
+            const q = document.getElementById('arimaQ').value;
+            const periods = document.getElementById('arimaPeriods').value;
+            const catId = document.getElementById('mlCategorySelect').value;
+            const locId = document.getElementById('mlLocationSelect').value;
+
+            const url = `/prediction/arima/?p=${p}&d=${d}&q=${q}&periods=${periods}&category_id=${catId}&location_id=${locId}`;
+
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    const d = json.data;
+                    const histLen = d.history_dates.length;
+                    const allLabels = [...d.history_dates, ...d.forecast_dates];
+
+                    // Historical dataset points: values for hist dates, nulls for forecast
+                    const histData = [...d.history_values, ...Array(d.forecast_dates.length).fill(null)];
+
+                    // Forecast trajectory: nulls up to the last historical point, then last hist point + forecasts
+                    const forecastData = Array(histLen - 1).fill(null);
+                    forecastData.push(d.history_values[histLen - 1]); // Connect lines
+                    forecastData.push(...d.forecast_values);
+
+                    // Upper & Lower bounds
+                    const upperData = Array(histLen - 1).fill(null);
+                    upperData.push(d.history_values[histLen - 1]);
+                    upperData.push(...d.upper_bounds);
+
+                    const lowerData = Array(histLen - 1).fill(null);
+                    lowerData.push(d.history_values[histLen - 1]);
+                    lowerData.push(...d.lower_bounds);
+
+                    arimaChartInstance.data.labels = allLabels;
+                    arimaChartInstance.data.datasets[0].data = histData;
+                    arimaChartInstance.data.datasets[1].data = forecastData;
+                    arimaChartInstance.data.datasets[2].data = upperData;
+                    arimaChartInstance.data.datasets[3].data = lowerData;
+                    arimaChartInstance.update();
+
+                    // Update Metrics Badges
+                    document.getElementById('arimaOrderBadge').textContent = d.metrics.order;
+                    document.getElementById('arimaAicBadge').textContent = `AIC: ${d.metrics.aic}`;
+                    document.getElementById('arimaBicBadge').textContent = `BIC: ${d.metrics.bic}`;
+                    document.getElementById('arimaObsCount').textContent = `${d.metrics.observations} historical months modeled (Residual Var: ${d.metrics.sigma2})`;
+                } else {
+                    alert('ARIMA modeling error: ' + (json.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Fit ARIMA & Forecast';
+            }
+        }
+
+        // Attach submit listener
+        document.getElementById('arimaForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            loadArimaForecast();
+        });
+
+        // Initial load of ARIMA on page load
+        loadArimaForecast();
     });
 </script>
 {% endblock %}

@@ -175,3 +175,38 @@ def run_prediction_view(request):
         'category': str(category) if category else 'All Categories',
         'forecast_period': prediction_record.get_forecast_period_display()
     })
+
+
+@login_required
+def arima_forecast_view(request):
+    """
+    ARIMA (AutoRegressive Integrated Moving Average) time-series forecasting endpoint.
+    Filters historical records by location and category, models the monthly series,
+    and returns historical points + forecasted steps with confidence bounds and AIC/BIC metrics.
+    """
+    from .arima_utils import build_monthly_time_series, fit_and_forecast_arima
+
+    cat_id = request.GET.get('category_id') or request.POST.get('category_id')
+    loc_id = request.GET.get('location_id') or request.POST.get('location_id')
+    p = int(request.GET.get('p', 1) or 1)
+    d = int(request.GET.get('d', 1) or 1)
+    q = int(request.GET.get('q', 1) or 1)
+    steps = int(request.GET.get('periods', 6) or 6)
+
+    qs = CrimeRecord.objects.all()
+    if cat_id:
+        qs = qs.filter(category_id=cat_id)
+    if loc_id:
+        qs = qs.filter(location_id=loc_id)
+
+    try:
+        ts = build_monthly_time_series(qs)
+        forecast_result = fit_and_forecast_arima(ts, order=(p, d, q), forecast_steps=steps)
+
+        return JsonResponse({
+            'status': 'success',
+            'data': forecast_result,
+        })
+    except Exception as e:
+        logger.error(f"ARIMA forecasting error: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
