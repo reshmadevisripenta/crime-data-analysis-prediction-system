@@ -59,6 +59,24 @@ The script performs the following tasks:
 
 ---
 
+## 🐳 Docker Deployment (Recommended for Instant Setup)
+
+If you have **Docker Desktop** installed, you can spin up the entire application stack (Django + MySQL 8 + Gunicorn) in a single command with zero manual configuration:
+
+```bash
+docker compose up --build
+```
+
+- **Web App**: Accessible on [http://localhost:8000/](http://localhost:8000/)
+- **MySQL Container**: Accessible externally on port `3307`
+- Automated migrations, static asset collection, and database seeding are performed automatically on startup.
+- Stop the containers anytime with:
+```bash
+docker compose down
+```
+
+---
+
 ## 🛠️ Manual Installation Guide
 
 ### 1. Clone or Open Workspace
