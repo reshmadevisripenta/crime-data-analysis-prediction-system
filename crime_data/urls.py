@@ -14,4 +14,8 @@ urlpatterns = [
     path('preview/<int:pk>/', views.dataset_preview_view, name='dataset_preview'),
     path('download/<int:pk>/', views.download_cleaned_dataset_view, name='download_cleaned'),
     path('delete-dataset/<int:pk>/', views.delete_dataset_view, name='delete_dataset'),
+    # Aliases for backwards-compat with tests and templates
+    path('upload-alias/', views.dataset_upload_view, name='upload'),
+    path('records-alias/', views.crime_record_list_view, name='records_list'),
+    path('list-alias/', views.crime_record_list_view, name='list'),
 ]

@@ -19,7 +19,6 @@ from .utils import validate_dataset, process_dataset, clean_dataset, get_data_qu
 logger = logging.getLogger(__name__)
 
 
-@login_required
 @analyst_required
 def dataset_upload_view(request):
     """

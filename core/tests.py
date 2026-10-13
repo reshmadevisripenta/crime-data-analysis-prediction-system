@@ -87,9 +87,12 @@ class CoreViewsTest(TestCase):
         self.assertIn('/accounts/login/', response.url)
 
     def test_audit_log_view_non_admin_forbidden(self):
+        """Non-admin user should be redirected to dashboard with an error message (not a raw 403)."""
         self.client.force_login(self.analyst_user)
         response = self.client.get(reverse('core:audit_log'))
-        self.assertEqual(response.status_code, 403)
+        # Decorator now redirects to dashboard instead of raising PermissionDenied
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/dashboard/', response.url)
 
     def test_audit_log_view_admin_success(self):
         AuditLog.objects.create(

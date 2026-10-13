@@ -47,6 +47,7 @@ def analysis_view(request):
         'yearly_trends_json': json.dumps(yearly_trends),
         'findings': findings,
         'past_analyses': past_analyses,
+        'total_records': qs.count(),
     }
     return render(request, 'analysis/analysis.html', context)
 
