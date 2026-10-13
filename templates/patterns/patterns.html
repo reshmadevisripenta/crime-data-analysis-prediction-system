@@ -175,70 +175,105 @@
             </div>
         </div>
     </div>
+
+    <!-- Statistical Observations & Pattern Findings -->
+    <div class="card card-custom mt-4">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Empirical Pattern Observations</h5>
+            <span class="badge bg-primary-subtle text-primary">Unsupervised Mining Engine</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                {% if observations %}
+                    {% for obs in observations %}
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border h-100 d-flex align-items-start gap-2">
+                            <i class="bi bi-arrow-right-circle-fill text-primary mt-1 flex-shrink-0"></i>
+                            <span class="text-muted small">{{ obs }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center text-muted py-3">
+                        <i class="bi bi-inbox fs-2 d-block mb-1"></i> No observations found for current filter.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    const temporalData = {{ temporal_json|safe }};
+    const catData = {{ cat_json|safe }};
+
     document.addEventListener("DOMContentLoaded", () => {
         // Hourly Diurnal Chart
-        const hourCtx = document.getElementById('temporalHourChart').getContext('2d');
-        const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
-        const hourData = [120, 95, 80, 65, 45, 55, 110, 240, 310, 340, 360, 390, 410, 380, 420, 460, 520, 580, 640, 710, 780, 840, 790, 450];
-
-        new Chart(hourCtx, {
-            type: 'line',
-            data: {
-                labels: hours,
-                datasets: [{
-                    label: 'Incidents by Hour',
-                    data: hourData,
-                    borderColor: '#1769FF',
-                    backgroundColor: 'rgba(23, 105, 255, 0.12)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-
-        // Stacked Bar Chart
-        const compCtx = document.getElementById('categoryComparisonChart').getContext('2d');
-        new Chart(compCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Theft', 'Burglary', 'Assault', 'Vehicle', 'Cyber'],
-                datasets: [
-                    {
-                        label: 'Low / Medium',
-                        data: [65, 50, 35, 70, 80],
-                        backgroundColor: '#102B52'
-                    },
-                    {
-                        label: 'Critical / High',
-                        data: [35, 50, 65, 30, 20],
-                        backgroundColor: '#EF4444'
+        const hourCtx = document.getElementById('temporalHourChart');
+        if (hourCtx && temporalData && temporalData.hourly) {
+            new Chart(hourCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: temporalData.hourly.labels,
+                    datasets: [{
+                        label: 'Incidents by Hour',
+                        data: temporalData.hourly.data,
+                        borderColor: '#1769FF',
+                        backgroundColor: 'rgba(23, 105, 255, 0.12)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
+                        x: { grid: { display: false } }
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true, grid: { display: false } },
-                    y: { stacked: true, grid: { color: '#F1F5F9' } }
                 }
-            }
-        });
+            });
+        }
+
+        // Category Growth Comparison Chart (Recent vs Prior 6 Months)
+        const compCtx = document.getElementById('categoryComparisonChart');
+        if (compCtx && catData) {
+            new Chart(compCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: catData.labels && catData.labels.length ? catData.labels : ['No Categories'],
+                    datasets: [
+                        {
+                            label: 'Prior 6 Months',
+                            data: catData.previous && catData.previous.length ? catData.previous : [0],
+                            backgroundColor: '#94A3B8',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Recent 6 Months',
+                            data: catData.current && catData.current.length ? catData.current : [0],
+                            backgroundColor: '#1769FF',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end' }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
+                    }
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

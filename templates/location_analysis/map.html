@@ -223,42 +223,68 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        const markersData = {{ markers_json|safe }};
+
+        // Default initial center (India geographic center)
+        const defaultCenter = [20.5937, 78.9629];
+        const defaultZoom = 5;
+
         // Initialize Leaflet Map
-        const map = L.map('crimeMap').setView([28.6139, 77.2090], 12);
+        const map = L.map('crimeMap').setView(defaultCenter, defaultZoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Sample Hotspot Coordinates & Markers
-        const hotspots = [
-            { lat: 28.6139, lng: 77.2090, name: '7th Ave Central Station', count: 142, color: '#EF4444' },
-            { lat: 28.6502, lng: 77.2300, name: 'West Industrial Terminal', count: 98, color: '#EF4444' },
-            { lat: 28.5800, lng: 77.1800, name: 'South Highway Junction', count: 76, color: '#F59E0B' },
-            { lat: 28.6288, lng: 77.2412, name: 'Eastern Boulevard Promenade', count: 64, color: '#F59E0B' },
-            { lat: 28.6015, lng: 77.1950, name: 'Commercial Bank Sector 4', count: 18, color: '#16A36A' }
-        ];
+        const markerGroup = L.featureGroup();
 
-        hotspots.forEach(spot => {
-            const circle = L.circleMarker([spot.lat, spot.lng], {
-                color: spot.color,
-                fillColor: spot.color,
-                fillOpacity: 0.6,
-                radius: Math.min(22, Math.max(8, spot.count / 6))
-            }).addTo(map);
+        if (markersData && markersData.length > 0) {
+            markersData.forEach(spot => {
+                const lat = parseFloat(spot.lat);
+                const lng = parseFloat(spot.lng);
+                if (isNaN(lat) || isNaN(lng)) return;
 
-            circle.bindPopup(`
-                <div style="font-family: 'Inter', sans-serif;">
-                    <strong style="color: #071B3A; font-size: 0.95rem;">${spot.name}</strong><br>
-                    <span style="color: #64748B; font-size: 0.8rem;">Reported Incidents: <b>${spot.count}</b></span><br>
-                    <a href="/crime-data/" style="color: #1769FF; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Audit Hotspot Logs &rarr;</a>
-                </div>
-            `);
-        });
+                const color = spot.color || '#1769FF';
+                const count = spot.count || 1;
+                const radius = Math.min(24, Math.max(8, count * 2));
+
+                const circle = L.circleMarker([lat, lng], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.65,
+                    radius: radius,
+                    weight: 2
+                });
+
+                circle.bindPopup(`
+                    <div style="font-family: 'Inter', sans-serif; min-width: 180px;">
+                        <strong style="color: #071B3A; font-size: 0.95rem;">${spot.title || spot.name}</strong><br>
+                        <span class="badge bg-light text-dark border my-1">${spot.category || 'General'}</span><br>
+                        <span style="color: #64748B; font-size: 0.85rem;">Recorded Incidents: <b>${count}</b></span><br>
+                        <a href="/crime-data/" style="color: #1769FF; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-block; margin-top: 4px;">
+                            View Incident Records &rarr;
+                        </a>
+                    </div>
+                `);
+
+                circle.addTo(markerGroup);
+            });
+
+            markerGroup.addTo(map);
+            try {
+                map.fitBounds(markerGroup.getBounds().pad(0.15));
+            } catch (e) {
+                map.setView(defaultCenter, defaultZoom);
+            }
+        }
 
         document.getElementById('resetMapZoom').addEventListener('click', () => {
-            map.setView([28.6139, 77.2090], 12);
+            if (markerGroup.getLayers().length > 0) {
+                map.fitBounds(markerGroup.getBounds().pad(0.15));
+            } else {
+                map.setView(defaultCenter, defaultZoom);
+            }
         });
     });
 </script>
