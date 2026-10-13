@@ -8,6 +8,11 @@ class DatasetUploadForm(forms.ModelForm):
     """Form for uploading CSV/Excel crime datasets with file extension and size validation."""
     ALLOWED_EXTENSIONS = ['.csv', '.xlsx', '.xls']
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+    file_type = forms.ChoiceField(
+        choices=DatasetUpload.FILE_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
     class Meta:
         model = DatasetUpload
@@ -17,10 +22,18 @@ class DatasetUploadForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': '.csv,.xlsx,.xls'
             }),
-            'file_type': forms.Select(attrs={
-                'class': 'form-select'
-            }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        file = cleaned_data.get('file')
+        if file and not cleaned_data.get('file_type'):
+            ext = os.path.splitext(file.name)[1].lower()
+            if ext in ['.xlsx', '.xls']:
+                cleaned_data['file_type'] = 'excel'
+            else:
+                cleaned_data['file_type'] = 'csv'
+        return cleaned_data
 
     def clean_file(self):
         uploaded_file = self.cleaned_data.get('file')

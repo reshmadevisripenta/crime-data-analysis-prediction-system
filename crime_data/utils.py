@@ -19,6 +19,9 @@ def validate_dataset(df):
     
     # Normalize column names for flexible matching (lowercase, stripped, replace space with underscore)
     df_cols_normalized = {col.strip().lower().replace(' ', '_'): col for col in df.columns}
+    # Allow 'category' as an alias for 'crime_category'
+    if 'crime_category' not in df_cols_normalized and 'category' in df_cols_normalized:
+        df_cols_normalized['crime_category'] = df_cols_normalized['category']
     
     missing_required = []
     for req in REQUIRED_COLUMNS:
@@ -48,6 +51,10 @@ def clean_dataset(df):
 
     # Standardize column names
     df_cleaned.columns = [col.strip().lower().replace(' ', '_') for col in df_cleaned.columns]
+
+    # Map category to crime_category if crime_category is absent
+    if 'crime_category' not in df_cleaned.columns and 'category' in df_cleaned.columns:
+        df_cleaned['crime_category'] = df_cleaned['category']
 
     # Drop total duplicate rows
     initial_rows = len(df_cleaned)
@@ -98,6 +105,8 @@ def get_data_quality_stats(df):
     
     # Valid rows are those with non-null required columns
     normalized_cols = {col.strip().lower().replace(' ', '_'): col for col in df.columns}
+    if 'crime_category' not in normalized_cols and 'category' in normalized_cols:
+        normalized_cols['crime_category'] = normalized_cols['category']
     required_in_df = [normalized_cols[c] for c in REQUIRED_COLUMNS if c in normalized_cols]
     
     if len(required_in_df) == len(REQUIRED_COLUMNS):

@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime
 import pandas as pd
+import numpy as np
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
@@ -146,13 +147,17 @@ def train_model_view(request):
         )
 
         # Create ModelEvaluation instance
+        safe_r2 = metrics.get('r2', 0.0)
+        if safe_r2 is None or (isinstance(safe_r2, float) and (np.isnan(safe_r2) or np.isinf(safe_r2))):
+            safe_r2 = 0.0
+
         evaluation = ModelEvaluation.objects.create(
             model=ml_model,
-            mae=metrics['mae'],
-            mse=metrics['mse'],
-            rmse=metrics['rmse'],
-            r2_score=metrics['r2'],
-            accuracy=metrics['accuracy'],
+            mae=metrics.get('mae', 0.0),
+            mse=metrics.get('mse', 0.0),
+            rmse=metrics.get('rmse', 0.0),
+            r2_score=safe_r2,
+            accuracy=metrics.get('accuracy', 0.0),
             training_samples=len(X_train),
             test_samples=len(X_test),
             baseline_mae=baseline_mae,

@@ -32,10 +32,12 @@ def dataset_upload_view(request):
             upload = form.save(commit=False)
             upload.user = request.user
             upload.original_filename = request.FILES['file'].name
+            ext = upload.original_filename.lower().split('.')[-1]
+            if not upload.file_type:
+                upload.file_type = 'excel' if ext in ['xlsx', 'xls'] else 'csv'
             upload.save()
 
             file_path = upload.file.path
-            ext = upload.original_filename.lower().split('.')[-1]
 
             try:
                 # Read into pandas DataFrame

@@ -411,84 +411,83 @@
 
 {% block extra_js %}
 <script>
+    // ── Backend JSON from dashboard_view ────────────────────────────────
+    const trendLabels   = {{ trend_labels_json|safe }};
+    const trendData     = {{ trend_data_json|safe }};
+    const catLabels     = {{ category_labels_json|safe }};
+    const catValues     = {{ category_values_json|safe }};
+    const catColors     = {{ category_colors_json|safe }};
+
     document.addEventListener("DOMContentLoaded", () => {
-        // Crime Trends Chart
-        const ctxTrends = document.getElementById('crimeTrendsChart').getContext('2d');
-        const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
-        
-        new Chart(ctxTrends, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'Actual Incidents',
-                        data: [420, 390, 460, 480, 520, 490, 470, 510],
+
+        // ── Crime Trends Line Chart ──────────────────────────────────────
+        const ctxTrends = document.getElementById('crimeTrendsChart');
+        if (ctxTrends) {
+            new Chart(ctxTrends.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Monthly Incidents',
+                        data: trendData,
                         borderColor: '#1769FF',
-                        backgroundColor: 'rgba(23, 105, 255, 0.08)',
+                        backgroundColor: 'rgba(23,105,255,0.08)',
                         tension: 0.35,
                         fill: true,
                         pointBackgroundColor: '#1769FF',
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'ML Prediction',
-                        data: [null, null, null, null, null, 490, 475, 525],
-                        borderColor: '#20D5F5',
-                        borderDash: [5, 5],
-                        backgroundColor: 'transparent',
-                        tension: 0.35,
-                        pointBackgroundColor: '#20D5F5',
-                        pointRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', align: 'end' }
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: '#F1F5F9' }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end' },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} incidents`
+                            }
+                        }
                     },
-                    x: {
-                        grid: { display: false }
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F1F5F9' } },
+                        x: { grid: { display: false } }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        // Category Doughnut Chart
-        const ctxCategory = document.getElementById('categoryChart').getContext('2d');
-        new Chart(ctxCategory, {
-            type: 'doughnut',
-            data: {
-                labels: ['Theft', 'Burglary', 'Assault', 'Vehicle Theft', 'Fraud', 'Others'],
-                datasets: [{
-                    data: [35, 22, 18, 12, 8, 5],
-                    backgroundColor: [
-                        '#1769FF',
-                        '#20D5F5',
-                        '#EF4444',
-                        '#F59E0B',
-                        '#102B52',
-                        '#94A3B8'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
+        // ── Category Doughnut Chart ──────────────────────────────────────
+        const ctxCat = document.getElementById('categoryChart');
+        if (ctxCat) {
+            const hasData = catValues.some(v => v > 0);
+            new Chart(ctxCat.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: hasData ? catLabels : ['No Data Yet'],
+                    datasets: [{
+                        data: hasData ? catValues : [1],
+                        backgroundColor: hasData ? catColors : ['#E2E8F0'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
                 },
-                cutout: '72%'
-            }
-        });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed} incidents`
+                            }
+                        }
+                    },
+                    cutout: '72%'
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

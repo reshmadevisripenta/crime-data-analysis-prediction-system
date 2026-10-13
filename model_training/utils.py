@@ -97,7 +97,8 @@ def evaluate_model(model, X_test, y_test):
     mae = float(mean_absolute_error(y_test, y_pred))
     mse = float(mean_squared_error(y_test, y_pred))
     rmse = float(np.sqrt(mse))
-    r2 = float(r2_score(y_test, y_pred))
+    r2_val = r2_score(y_test, y_pred) if len(y_test) >= 2 else 0.0
+    r2 = 0.0 if (r2_val is None or np.isnan(r2_val)) else float(r2_val)
 
     # Approximate accuracy percentage based on relative error bounded [0, 100]
     mean_actual = np.mean(y_test) if len(y_test) > 0 and np.mean(y_test) != 0 else 1.0
