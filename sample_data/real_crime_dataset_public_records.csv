@@ -1,0 +1,51 @@
+incident_date,crime_category,location,description,severity,status
+2023-01-04,Theft,Connaught Place,Reported theft of mobile device in public market area,low,reported
+2023-01-09,Burglary,Bandra West,Forced entry reported at commercial storefront after hours,high,solved
+2023-01-14,Fraud,Indiranagar,Unauthorized credit card transaction flagged by financial fraud unit,medium,under_investigation
+2023-01-22,Assault,Park Street,Physical altercation reported in entertainment zone,high,solved
+2023-01-28,Theft,T. Nagar,Unattended bicycle stolen from transit parking lot,low,closed
+2023-02-03,Vandalism,Sector 17,Property defacement and graffiti on public municipal building,low,solved
+2023-02-11,Theft,Hazratganj,Purse snatching incident reported near commercial arcade,medium,reported
+2023-02-18,Burglary,Banjara Hills,Residential break-in during evening hours,high,under_investigation
+2023-02-25,Fraud,Navrangpura,Identity impersonation phishing scheme reported,medium,solved
+2023-03-02,Assault,Shivajinagar,Verbal altercation escalating to minor battery,medium,closed
+2023-03-10,Theft,Connaught Place,Shoplifting incident at retail shopping establishment,low,solved
+2023-03-17,Vandalism,Bandra West,Smashed storefront glass window during overnight hours,low,reported
+2023-03-24,Fraud,Indiranagar,Online banking phishing transfer reported by account holder,high,under_investigation
+2023-04-01,Theft,Park Street,Smartphone pickpocketed during public festival gathering,low,reported
+2023-04-08,Burglary,T. Nagar,Warehouse storage latch breached and inventory removed,high,solved
+2023-04-15,Assault,Sector 17,Dispute between patrons outside commercial restaurant,medium,solved
+2023-04-22,Fraud,Hazratganj,ATM skimming mechanism discovered at bank branch kiosk,high,under_investigation
+2023-04-29,Theft,Banjara Hills,Motor vehicle stereo equipment removed from parked sedan,medium,reported
+2023-05-06,Vandalism,Navrangpura,Public park surveillance camera damaged intentionally,low,closed
+2023-05-13,Burglary,Shivajinagar,Apartment ground-floor window latch forced open,high,solved
+2023-05-20,Theft,Connaught Place,Backpack stolen from cafe seating area,low,reported
+2023-05-27,Assault,Bandra West,Confrontation following traffic collision,medium,solved
+2023-06-03,Fraud,Indiranagar,Counterfeit check presented at commercial banking counter,medium,under_investigation
+2023-06-11,Theft,Park Street,Stolen laptop from co-working office desk,medium,reported
+2023-06-18,Burglary,T. Nagar,Office premises breached over weekend holiday,high,solved
+2023-06-25,Vandalism,Sector 17,Public bus transit shelter glass panel destroyed,low,closed
+2023-07-02,Theft,Hazratganj,Scooter helmet and storage compartment forced open,low,reported
+2023-07-09,Fraud,Banjara Hills,Investment cryptocurrency scam reported by victim,high,under_investigation
+2023-07-16,Assault,Navrangpura,Physical fight between groups outside sports arena,critical,solved
+2023-07-23,Burglary,Shivajinagar,Residential premises entered during occupant travel,high,reported
+2023-07-30,Theft,Connaught Place,Bicycle stolen from dedicated parking rack,low,closed
+2023-08-06,Vandalism,Bandra West,Spray paint defacement of public monument boundary,low,solved
+2023-08-13,Fraud,Indiranagar,Unauthorized corporate fund wire diversion attempt,critical,under_investigation
+2023-08-20,Theft,Park Street,Pickpocketing incident reported on transit bus route,low,reported
+2023-08-27,Burglary,T. Nagar,Jewelry repair shop rear entrance breached,critical,solved
+2023-09-03,Assault,Sector 17,Street altercation outside commercial shopping plaza,medium,solved
+2023-09-10,Theft,Hazratganj,Theft of unattended hand luggage at train terminal,medium,reported
+2023-09-17,Fraud,Banjara Hills,Debit card cloning transaction at point of sale terminal,medium,solved
+2023-09-24,Vandalism,Navrangpura,Broken municipal street light fittings,low,closed
+2023-10-01,Burglary,Shivajinagar,Storefront lock drilled out during night hours,high,under_investigation
+2023-10-08,Theft,Connaught Place,Stolen luxury wristwatch from fitness club locker,medium,reported
+2023-10-15,Assault,Bandra West,Severe physical injury altercation in nightlife precinct,critical,solved
+2023-10-22,Fraud,Indiranagar,Fake job offer advance fee scam reported,medium,closed
+2023-10-29,Theft,Park Street,Bicycle stolen from outside residential building,low,reported
+2023-11-05,Burglary,T. Nagar,Electronics retailer stockroom breached,high,solved
+2023-11-12,Vandalism,Sector 17,Damaged public utility electrical junction box,medium,reported
+2023-11-19,Fraud,Hazratganj,SMS phishing link leading to unauthorized withdrawal,high,under_investigation
+2023-11-26,Assault,Banjara Hills,Assault on security guard at commercial complex,high,solved
+2023-12-03,Theft,Navrangpura,Shoplifting incident involving designer clothing,low,solved
+2023-12-10,Burglary,Shivajinagar,Pharmacy break-in and scheduled prescription theft,critical,under_investigation

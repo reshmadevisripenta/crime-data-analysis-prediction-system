@@ -39,18 +39,17 @@ echo [5/8] Checking configuration and .env file...
 if not exist ".env" (
     echo Creating .env from .env.example...
     copy .env.example .env
-    echo Note: Created default .env. Please update DB credentials if necessary.
+    echo Note: Created default .env (DB_ENGINE=sqlite by default).
 ) else (
     echo .env file found.
 )
 
 echo.
 echo [6/8] Running database migrations...
-python manage.py makemigrations accounts core dashboard crime_data analysis location_analysis patterns ontology model_training prediction visualization reports notifications
 python manage.py migrate
 if errorlevel 1 (
-    echo Migration warning: Ensure MySQL service is running and 'crimedb' database exists.
-    echo SQL Command: CREATE DATABASE IF NOT EXISTS crimedb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    echo Note: If using MySQL, verify service is running and 'crimedb' exists.
+    echo If you prefer zero-config SQLite, set DB_ENGINE=sqlite in .env.
     pause
 )
 
@@ -70,7 +69,7 @@ if /i "%SEED_DATA%"=="y" (
 
 echo.
 echo =========================================================================
-echo Setup Completed Successfully! Starting Django Development Server...
+echo Setup Completed Successfully! Starting Development Server...
 echo Visit: http://127.0.0.1:8000/
 echo =========================================================================
-python manage.py runserver
+python manage.py runserver 127.0.0.1:8000

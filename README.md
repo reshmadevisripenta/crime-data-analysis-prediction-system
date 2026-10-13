@@ -102,37 +102,74 @@ Copy `.env.example` to `.env`:
 ```bash
 copy .env.example .env
 ```
-Update database connection parameters inside `.env` to match your local MySQL settings:
+The system supports **SQLite** (default zero-configuration out-of-the-box) or **MySQL**:
 ```env
 SECRET_KEY=django-insecure-crime-analysis-prediction-system-key-2024-secure!
 DEBUG=True
+
+# Database Engine: 'sqlite' (zero-config, default) or 'mysql'
+DB_ENGINE=sqlite
+
+# MySQL settings (only required when DB_ENGINE=mysql)
 DB_NAME=crimedb
 DB_USER=root
 DB_PASSWORD=root
 DB_HOST=localhost
 DB_PORT=3306
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-email-password
 ```
 
 ### 5. Run Database Migrations
 ```bash
-python manage.py makemigrations accounts core dashboard crime_data analysis location_analysis patterns ontology model_training prediction visualization reports notifications
 python manage.py migrate
 ```
 
-### 6. Create Superuser (Admin)
+### 6. Seed Initial Demonstration Data
 ```bash
-python manage.py createsuperuser
+python manage.py seed_data
+```
+Default accounts created:
+- **Administrator**: `admin` / `admin123`
+- **Analyst**: `analyst` / `analyst123`
+
+### 7. Ingest Public / Demo Crime Datasets
+You can upload CSV datasets via the web UI at `/crime-data/upload/` (Analyst/Admin role) or ingest directly from the command line:
+```bash
+# Ingest real public format records
+python manage.py load_crime_dataset --file sample_data/real_crime_dataset_public_records.csv
+
+# Or ingest synthetic benchmark test records
+python manage.py load_crime_dataset --file sample_data/demo_crime_data_synthetic.csv
 ```
 
-### 7. Run Server
+### 8. Run the Web Server
 ```bash
-python manage.py runserver
+python manage.py runserver 127.0.0.1:8000
 ```
 Access the system in your browser at `http://127.0.0.1:8000/`.
+
+---
+
+## 📊 Public Crime Datasets & Data Sources
+
+For production or research use, obtain authentic public open-data crime logs from official open government portals:
+1. **US Data Portal**: [data.gov](https://catalog.data.gov/dataset/?q=crime) (Chicago, NYC, LA, San Francisco Police crime incident logs)
+2. **UK Police Open Data**: [data.police.uk](https://data.police.uk/data/) (Street-level crime and outcome data across England, Wales, and Northern Ireland)
+3. **Open Government Data India**: [data.gov.in](https://data.gov.in/) (National Crime Records Bureau - NCRB open crime statistics)
+
+### Required CSV Columns:
+Uploaded CSV files must contain at least the following headers (case-insensitive):
+- `incident_date` (format: `YYYY-MM-DD`)
+- `crime_category` (or `category`): Offense type (e.g. Theft, Assault, Burglary, Fraud)
+- `location`: Jurisdiction or neighborhood name (e.g. Central Area, North District)
+- *Optional headers*: `severity` (`low`, `medium`, `high`, `critical`), `status` (`reported`, `under_investigation`, `solved`, `closed`), `description`
+
+---
+
+## ⚖️ Prediction Module & Ethical AI Guidelines
+
+- **Supervised ML Pipeline**: Scikit-Learn Random Forest, Decision Tree, Gradient Boosting, and Linear Regression for incident frequency estimation.
+- **Time-Series Forecaster**: ARIMA $(p, d, q)$ stochastic modeling with Akaike/Bayesian Information Criteria (AIC/BIC).
+- **Ethical Usage Notice**: Predictive outputs represent statistical frequency approximations based on historical aggregations and **are not guaranteed**. Predictive outputs must never be used to profile, discriminate against, or identify specific individuals as criminals.
 
 ---
 

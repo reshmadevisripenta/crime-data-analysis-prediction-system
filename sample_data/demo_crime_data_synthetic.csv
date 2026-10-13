@@ -1,0 +1,13 @@
+# [DEMO DATA - SYNTHETIC BENCHMARK FOR TESTING PURPOSES ONLY]
+# Never use this file as actual crime statistics.
+incident_date,crime_category,location,description,severity,status
+2024-01-02,Theft,Connaught Place,[DEMO] Simulated phone theft test case,low,reported
+2024-01-05,Assault,Bandra West,[DEMO] Synthetic altercation record for ML test,medium,solved
+2024-01-08,Burglary,Indiranagar,[DEMO] Synthetic burglary test record,high,under_investigation
+2024-01-12,Fraud,Park Street,[DEMO] Synthetic financial phishing simulation,high,solved
+2024-01-15,Vandalism,T. Nagar,[DEMO] Synthetic graffiti benchmark test,low,closed
+2024-01-19,Theft,Sector 17,[DEMO] Simulated retail theft test record,low,reported
+2024-01-22,Assault,Hazratganj,[DEMO] Synthetic battery record for model validation,medium,solved
+2024-01-26,Burglary,Banjara Hills,[DEMO] Simulated forced entry test case,high,under_investigation
+2024-01-29,Fraud,Navrangpura,[DEMO] Simulated wire scam benchmark entry,critical,reported
+2024-02-02,Vandalism,Shivajinagar,[DEMO] Simulated property damage test record,low,closed
