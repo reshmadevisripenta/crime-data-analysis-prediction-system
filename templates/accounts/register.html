@@ -123,10 +123,9 @@
                 <label for="id_role" class="form-label small fw-semibold text-secondary">Role Classification</label>
                 <select name="role" class="form-select {% if form.role.errors %}is-invalid{% endif %}" id="id_role" required>
                     <option value="analyst" {% if form.role.value == 'analyst' or not form.role.value %}selected{% endif %}>Crime Analyst (Intelligence &amp; Modeling)</option>
-                    <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Administrator (Full Access)</option>
                     <option value="viewer" {% if form.role.value == 'viewer' %}selected{% endif %}>Viewer / Public Auditor (Read-Only)</option>
                 </select>
-                <div class="form-text small" style="font-size: 0.75rem;">Determines model modification and data upload permissions.</div>
+                <div class="form-text small" style="font-size: 0.75rem;"><i class="bi bi-info-circle me-1"></i>Administrator accounts are provisioned by system admins only. Select Analyst for data upload and analysis access.</div>
                 {% for error in form.role.errors %}
                     <div class="field-error-feedback">{{ error }}</div>
                 {% endfor %}

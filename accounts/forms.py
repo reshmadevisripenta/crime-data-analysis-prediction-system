@@ -96,10 +96,11 @@ class RegisterForm(forms.ModelForm):
             'placeholder': 'Username'
         })
     )
+    PUBLIC_ROLE_CHOICES = [('analyst', 'Analyst'), ('viewer', 'Viewer')]
     role = forms.ChoiceField(
-        choices=User.ROLE_CHOICES,
+        choices=PUBLIC_ROLE_CHOICES,
         required=False,
-        initial='viewer',
+        initial='analyst',
         widget=forms.Select(attrs={
             'class': 'form-select'
         })
@@ -173,10 +174,13 @@ class RegisterForm(forms.ModelForm):
                 user.last_name = ''
 
         role = self.cleaned_data.get('role')
+        # Security: Never allow self-registration as admin
+        if role == 'admin':
+            role = 'analyst'
         if role in dict(User.ROLE_CHOICES):
             user.role = role
         else:
-            user.role = 'viewer'
+            user.role = 'analyst'
 
         if commit:
             user.save()

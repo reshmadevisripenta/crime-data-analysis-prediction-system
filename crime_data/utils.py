@@ -19,9 +19,26 @@ def validate_dataset(df):
     
     # Normalize column names for flexible matching (lowercase, stripped, replace space with underscore)
     df_cols_normalized = {col.strip().lower().replace(' ', '_'): col for col in df.columns}
-    # Allow 'category' as an alias for 'crime_category'
-    if 'crime_category' not in df_cols_normalized and 'category' in df_cols_normalized:
-        df_cols_normalized['crime_category'] = df_cols_normalized['category']
+
+    # Alias mapping for flexible schema ingestion
+    category_aliases = ['crime_category', 'category', 'crime_type', 'crime', 'offense', 'offense_type', 'primary_type']
+    location_aliases = ['location', 'location_name', 'area', 'city', 'neighborhood', 'jurisdiction', 'block', 'address']
+    date_aliases = ['incident_date', 'date', 'datetime', 'incident_datetime', 'timestamp', 'occurred_date']
+
+    for alias in category_aliases:
+        if alias in df_cols_normalized:
+            df_cols_normalized['crime_category'] = df_cols_normalized[alias]
+            break
+
+    for alias in location_aliases:
+        if alias in df_cols_normalized:
+            df_cols_normalized['location'] = df_cols_normalized[alias]
+            break
+
+    for alias in date_aliases:
+        if alias in df_cols_normalized:
+            df_cols_normalized['incident_date'] = df_cols_normalized[alias]
+            break
     
     missing_required = []
     for req in REQUIRED_COLUMNS:
@@ -42,6 +59,7 @@ def clean_dataset(df):
     """
     Cleans the uploaded DataFrame:
     - Normalizes column names
+    - Resolves header aliases
     - Strips whitespace
     - Drops completely duplicate rows
     - Standardizes date formats
@@ -52,9 +70,23 @@ def clean_dataset(df):
     # Standardize column names
     df_cleaned.columns = [col.strip().lower().replace(' ', '_') for col in df_cleaned.columns]
 
-    # Map category to crime_category if crime_category is absent
-    if 'crime_category' not in df_cleaned.columns and 'category' in df_cleaned.columns:
-        df_cleaned['crime_category'] = df_cleaned['category']
+    # Map category aliases
+    for alias in ['category', 'crime_type', 'crime', 'offense', 'offense_type', 'primary_type']:
+        if 'crime_category' not in df_cleaned.columns and alias in df_cleaned.columns:
+            df_cleaned['crime_category'] = df_cleaned[alias]
+            break
+
+    # Map location aliases
+    for alias in ['location_name', 'area', 'city', 'neighborhood', 'jurisdiction', 'block', 'address']:
+        if 'location' not in df_cleaned.columns and alias in df_cleaned.columns:
+            df_cleaned['location'] = df_cleaned[alias]
+            break
+
+    # Map date aliases
+    for alias in ['date', 'datetime', 'incident_datetime', 'timestamp', 'occurred_date']:
+        if 'incident_date' not in df_cleaned.columns and alias in df_cleaned.columns:
+            df_cleaned['incident_date'] = df_cleaned[alias]
+            break
 
     # Drop total duplicate rows
     initial_rows = len(df_cleaned)

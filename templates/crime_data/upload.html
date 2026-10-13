@@ -56,7 +56,7 @@
                     <span class="badge bg-primary-subtle text-primary"><i class="bi bi-shield-check me-1"></i>Schema Checked</span>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" enctype="multipart/form-data" id="datasetUploadForm" action="/crime-data/upload/">
+                    <form method="POST" enctype="multipart/form-data" id="datasetUploadForm" action="{% url 'crime_data:upload' %}">
                         {% csrf_token %}
                         
                         <div class="upload-dropzone" id="dropZone">
@@ -118,15 +118,15 @@
                     
                     <ul class="list-group list-group-flush mb-3">
                         <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>category</code>
+                            <div><code>crime_category</code> <span class="text-muted" style="font-size:0.72rem">(or: category, crime_type, offense, primary_type)</span></div>
                             <span class="badge bg-danger-subtle text-danger">Required</span>
                         </li>
                         <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>location_name</code>
+                            <div><code>location</code> <span class="text-muted" style="font-size:0.72rem">(or: area, city, neighborhood, block, address)</span></div>
                             <span class="badge bg-danger-subtle text-danger">Required</span>
                         </li>
                         <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>incident_date</code>
+                            <div><code>incident_date</code> <span class="text-muted" style="font-size:0.72rem">(or: date, datetime, timestamp, occurred_date)</span></div>
                             <span class="badge bg-danger-subtle text-danger">YYYY-MM-DD</span>
                         </li>
                         <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
@@ -136,6 +136,10 @@
                         <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
                             <code>severity</code>
                             <span class="badge bg-secondary-subtle text-secondary">Low/Med/High</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <code>description, status, source</code>
+                            <span class="badge bg-secondary-subtle text-secondary">Optional</span>
                         </li>
                     </ul>
 
@@ -202,25 +206,12 @@
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>city_crime_report_2024.csv</td>
-                                        <td>12,480</td>
-                                        <td class="text-success fw-semibold">12,445</td>
-                                        <td class="text-danger fw-semibold">35</td>
-                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-                                        <td class="text-muted">Oct 10, 2024 14:22</td>
-                                        <td class="pe-4 text-end">
-                                            <a href="/crime-data/preview/" class="btn btn-sm btn-outline-primary py-0 px-2">Preview</a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>precinct_north_logs.xlsx</td>
-                                        <td>3,210</td>
-                                        <td class="text-success fw-semibold">3,205</td>
-                                        <td class="text-danger fw-semibold">5</td>
-                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-                                        <td class="text-muted">Oct 05, 2024 09:15</td>
-                                        <td class="pe-4 text-end">
-                                            <a href="/crime-data/preview/" class="btn btn-sm btn-outline-primary py-0 px-2">Preview</a>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                                <p class="mb-1 fw-semibold">No datasets uploaded yet</p>
+                                                <small>Upload your first CSV or Excel file to begin analysis</small>
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endif %}
