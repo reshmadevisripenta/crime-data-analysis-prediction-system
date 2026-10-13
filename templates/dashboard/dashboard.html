@@ -118,11 +118,10 @@
                         <i class="bi bi-shield-exclamation"></i>
                     </div>
                 </div>
-                <div class="metric-value">{{ total_records|default:"12,480" }}</div>
-                <div class="d-flex align-items-center gap-1 mt-2 small text-success">
-                    <i class="bi bi-arrow-up-right"></i>
-                    <span class="fw-semibold">+8.4%</span>
-                    <span class="text-muted ms-1">vs last period</span>
+                <div class="metric-value">{{ total_records|default:total_crime_records|default:"0" }}</div>
+                <div class="d-flex align-items-center gap-1 mt-2 small text-muted">
+                    <i class="bi bi-database text-primary"></i>
+                    <span>Live database records</span>
                 </div>
             </div>
         </div>
@@ -136,7 +135,7 @@
                         <i class="bi bi-tags-fill"></i>
                     </div>
                 </div>
-                <div class="metric-value">{{ total_categories|default:"24" }}</div>
+                <div class="metric-value">{{ total_categories|default:"0" }}</div>
                 <div class="d-flex align-items-center gap-1 mt-2 small text-muted">
                     <i class="bi bi-check2-circle text-success"></i>
                     <span>Ontology mapped</span>
@@ -153,10 +152,10 @@
                         <i class="bi bi-geo-alt-fill"></i>
                     </div>
                 </div>
-                <div class="metric-value">{{ total_locations|default:"142" }}</div>
-                <div class="d-flex align-items-center gap-1 mt-2 small text-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <span class="fw-semibold">12 High Alert</span>
+                <div class="metric-value">{{ total_locations|default:"0" }}</div>
+                <div class="d-flex align-items-center gap-1 mt-2 small text-muted">
+                    <i class="bi bi-geo-alt text-warning"></i>
+                    <span>Monitored regions</span>
                 </div>
             </div>
         </div>
@@ -170,10 +169,14 @@
                         <i class="bi bi-graph-up-arrow"></i>
                     </div>
                 </div>
-                <div class="metric-value">{{ total_predictions|default:"3,620" }}</div>
+                <div class="metric-value">{{ total_predictions|default:"0" }}</div>
                 <div class="d-flex align-items-center gap-1 mt-2 small text-cyan" style="color: #0284C7;">
                     <i class="bi bi-cpu"></i>
-                    <span>R² Confidence: 91.2%</span>
+                    {% if latest_eval %}
+                        <span>R² Score: {{ latest_eval.r2_score|floatformat:3 }}</span>
+                    {% else %}
+                        <span>Forecasting Engine Active</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -262,22 +265,10 @@
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>metro_crime_log_2024_q3.csv</td>
-                                        <td>4,850</td>
-                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-                                        <td class="pe-4 text-muted">Yesterday</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>district_surveillance_export.xlsx</td>
-                                        <td>2,140</td>
-                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-                                        <td class="pe-4 text-muted">3 days ago</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>suburban_precinct_cases.csv</td>
-                                        <td>5,490</td>
-                                        <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-                                        <td class="pe-4 text-muted">1 week ago</td>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            <i class="bi bi-inbox fs-3 d-block mb-1 opacity-50"></i>
+                                            <span>No datasets uploaded yet</span>
+                                        </td>
                                     </tr>
                                 {% endif %}
                             </tbody>
@@ -296,41 +287,23 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot bg-primary"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold small">Random Forest Model Trained</span>
-                                <span class="text-muted" style="font-size: 0.72rem;">12m ago</span>
+                        {% if recent_notifications %}
+                            {% for notif in recent_notifications %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot {% if notif.notification_type == 'success' %}bg-success{% elif notif.notification_type == 'warning' %}bg-warning{% elif notif.notification_type == 'error' %}bg-danger{% else %}bg-primary{% endif %}"></div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold small">{{ notif.title }}</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">{{ notif.created_at|timesince }} ago</span>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1">{{ notif.message|truncatechars:120 }}</p>
                             </div>
-                            <p class="text-muted small mb-0 mt-1">Accuracy score R² = 0.912 achieved on 8-month validation split.</p>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot bg-warning"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold small">Hotspot Density Surge Detected</span>
-                                <span class="text-muted" style="font-size: 0.72rem;">2h ago</span>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-bell-slash fs-3 d-block mb-1 opacity-50"></i>
+                                <span>No recent notifications recorded</span>
                             </div>
-                            <p class="text-muted small mb-0 mt-1">Downtown Sector 4 marked as high probability zone for vehicle theft.</p>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot bg-info"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold small">Ontology Triples Synchronized</span>
-                                <span class="text-muted" style="font-size: 0.72rem;">5h ago</span>
-                            </div>
-                            <p class="text-muted small mb-0 mt-1">1,240 new semantic triples added to the crime knowledge graph.</p>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot bg-success"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold small">Dataset Ingestion Finished</span>
-                                <span class="text-muted" style="font-size: 0.72rem;">1d ago</span>
-                            </div>
-                            <p class="text-muted small mb-0 mt-1">metro_crime_log_2024_q3.csv validated with 0 schema errors.</p>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -367,36 +340,18 @@
                                     <tr>
                                         <td class="ps-4 fw-semibold">{{ pred.location }}</td>
                                         <td><span class="badge bg-secondary-subtle text-dark">{{ pred.category }}</span></td>
-                                        <td>{{ pred.period }}</td>
-                                        <td class="fw-bold text-navy">{{ pred.predicted_count }}</td>
-                                        <td><span class="badge bg-success-subtle text-success">92%</span></td>
-                                        <td class="pe-4 text-muted">{{ pred.created_at|date:"M d, Y" }}</td>
+                                        <td>{{ pred.period|default:pred.forecast_period }}</td>
+                                        <td class="fw-bold text-navy">{{ pred.predicted_count|floatformat:1 }}</td>
+                                        <td><span class="badge bg-success-subtle text-success">{% widthratio pred.confidence_level 1 100 %}%</span></td>
+                                        <td class="pe-4 text-muted">{{ pred.prediction_date|date:"M d, Y" }}</td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-geo-alt text-danger me-1"></i>Downtown Central Station</td>
-                                        <td><span class="badge bg-danger-subtle text-danger">Theft &amp; Robbery</span></td>
-                                        <td>Next 30 Days</td>
-                                        <td class="fw-bold text-navy fs-6">48 <small class="text-muted fw-normal">(±4)</small></td>
-                                        <td><span class="badge bg-success-subtle text-success">93.4% Confidence</span></td>
-                                        <td class="pe-4 text-muted">Today</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-geo-alt text-danger me-1"></i>North Industrial Belt</td>
-                                        <td><span class="badge bg-warning-subtle text-warning">Burglary</span></td>
-                                        <td>Next 14 Days</td>
-                                        <td class="fw-bold text-navy fs-6">19 <small class="text-muted fw-normal">(±2)</small></td>
-                                        <td><span class="badge bg-success-subtle text-success">89.8% Confidence</span></td>
-                                        <td class="pe-4 text-muted">Yesterday</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-geo-alt text-danger me-1"></i>South Highway Corridor</td>
-                                        <td><span class="badge bg-primary-subtle text-primary">Vehicle Theft</span></td>
-                                        <td>Next 60 Days</td>
-                                        <td class="fw-bold text-navy fs-6">62 <small class="text-muted fw-normal">(±6)</small></td>
-                                        <td><span class="badge bg-success-subtle text-success">91.0% Confidence</span></td>
-                                        <td class="pe-4 text-muted">2 days ago</td>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i class="bi bi-graph-up fs-3 d-block mb-1 opacity-50"></i>
+                                            <span>No predictions generated yet. Navigate to <a href="/prediction/">Crime Prediction</a> to forecast future trends.</span>
+                                        </td>
                                     </tr>
                                 {% endif %}
                             </tbody>

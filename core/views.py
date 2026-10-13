@@ -42,6 +42,13 @@ def about_view(request):
     return render(request, 'core/about.html')
 
 
+def features_view(request):
+    """
+    Dedicated features catalog page presenting the platform's 8 core modules.
+    """
+    return render(request, 'core/features.html')
+
+
 def contact_view(request):
     """
     Public contact form page. Validates input and saves ContactMessage instance.

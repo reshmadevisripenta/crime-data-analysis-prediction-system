@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from crime_data.models import CrimeRecord, CrimeCategory, Location, DatasetUpload
 from prediction.models import PredictionResult
+from model_training.models import MLModel
 from notifications.models import Notification
 
 logger = logging.getLogger(__name__)
@@ -88,11 +89,17 @@ def dashboard_view(request):
         .values_list('severity', 'total')
     )
 
+    # 8. Latest trained model evaluation (if available)
+    latest_model = MLModel.objects.filter(status='trained').prefetch_related('evaluations').order_by('-created_at').first()
+    latest_eval = latest_model.evaluations.first() if latest_model else None
+
     context = {
+        'total_records': total_crime_records,
         'total_crime_records': total_crime_records,
         'total_categories': total_categories,
         'total_locations': total_locations,
         'total_predictions': total_predictions,
+        'latest_eval': latest_eval,
         'recent_uploads': recent_uploads,
         'latest_predictions': latest_predictions,
         'recent_notifications': recent_notifications,

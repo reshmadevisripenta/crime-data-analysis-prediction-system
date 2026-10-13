@@ -206,6 +206,16 @@
         position: relative;
         height: 100%;
         z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .step-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 14px 30px rgba(7, 27, 58, 0.08);
+        border-color: var(--primary-blue);
     }
 
     .step-number {
@@ -221,6 +231,27 @@
         justify-content: center;
         margin: 0 auto 1.25rem;
         border: 3px solid #E2E8F0;
+        transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .step-card:hover .step-number {
+        transform: scale(1.1);
+        background: var(--primary-blue);
+        color: #FFFFFF;
+    }
+
+    .step-action-btn {
+        margin-top: 1.25rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
     }
 
     .steps-row-connector {
@@ -341,19 +372,19 @@
     <div class="container">
         <div class="row g-4 text-center">
             <div class="col-6 col-lg-3">
-                <div class="stat-counter-number counter" data-target="{{ total_records|default:'12480' }}">0</div>
+                <div class="stat-counter-number counter" data-target="{{ total_records|default:'0' }}">0</div>
                 <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Total Records Analyzed</div>
             </div>
             <div class="col-6 col-lg-3">
-                <div class="stat-counter-number counter text-cyan" style="color: #20D5F5;" data-target="{{ total_categories|default:'28' }}">0</div>
+                <div class="stat-counter-number counter text-cyan" style="color: #20D5F5;" data-target="{{ total_categories|default:'0' }}">0</div>
                 <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Crime Categories</div>
             </div>
             <div class="col-6 col-lg-3">
-                <div class="stat-counter-number counter text-warning" data-target="{{ total_locations|default:'145' }}">0</div>
+                <div class="stat-counter-number counter text-warning" data-target="{{ total_locations|default:'0' }}">0</div>
                 <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Locations Covered</div>
             </div>
             <div class="col-6 col-lg-3">
-                <div class="stat-counter-number counter text-success" data-target="{{ total_predictions|default:'3620' }}">0</div>
+                <div class="stat-counter-number counter text-success" data-target="{{ total_predictions|default:'0' }}">0</div>
                 <div class="text-light opacity-75 small fw-semibold text-uppercase mt-2 tracking-wide">Predictions Made</div>
             </div>
         </div>
@@ -434,30 +465,50 @@
         <div class="row g-4 steps-row-connector">
             <div class="col-md-6 col-lg-3">
                 <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h6 class="fw-bold mb-2">Upload Data</h6>
-                    <p class="text-muted small mb-0">Ingest structured CSV or Excel records with automatic sanitization and schema verification.</p>
+                    <div>
+                        <div class="step-number">1</div>
+                        <h6 class="fw-bold mb-2">Upload Data</h6>
+                        <p class="text-muted small mb-0">Ingest structured CSV or Excel records with automatic sanitization and schema verification.</p>
+                    </div>
+                    <a href="{% url 'crime_data:upload' %}" class="btn btn-outline-primary step-action-btn">
+                        <span>Upload Data</span> <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h6 class="fw-bold mb-2">Analyze Patterns</h6>
-                    <p class="text-muted small mb-0">Detect temporal peak hours, recurring crime waves, and spatial hotspot densities.</p>
+                    <div>
+                        <div class="step-number">2</div>
+                        <h6 class="fw-bold mb-2">Analyze Patterns</h6>
+                        <p class="text-muted small mb-0">Detect temporal peak hours, recurring crime waves, and spatial hotspot densities.</p>
+                    </div>
+                    <a href="{% url 'analysis:analysis' %}" class="btn btn-outline-success step-action-btn">
+                        <span>Analyze Patterns</span> <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h6 class="fw-bold mb-2">Build Ontology</h6>
-                    <p class="text-muted small mb-0">Generate semantic triples and hierarchical taxonomies to uncover hidden crime correlations.</p>
+                    <div>
+                        <div class="step-number">3</div>
+                        <h6 class="fw-bold mb-2">Build Ontology</h6>
+                        <p class="text-muted small mb-0">Generate semantic triples and hierarchical taxonomies to uncover hidden crime correlations.</p>
+                    </div>
+                    <a href="{% url 'ontology:explorer' %}" class="btn btn-outline-primary step-action-btn">
+                        <span>Build Ontology</span> <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="step-card">
-                    <div class="step-number">4</div>
-                    <h6 class="fw-bold mb-2">Predict Trends</h6>
-                    <p class="text-muted small mb-0">Train predictive algorithms to project future incident volumes and guide patrols.</p>
+                    <div>
+                        <div class="step-number">4</div>
+                        <h6 class="fw-bold mb-2">Predict Trends</h6>
+                        <p class="text-muted small mb-0">Train predictive algorithms to project future incident volumes and guide patrols.</p>
+                    </div>
+                    <a href="{% url 'prediction:prediction' %}" class="btn btn-outline-info step-action-btn">
+                        <span>Predict Trends</span> <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>

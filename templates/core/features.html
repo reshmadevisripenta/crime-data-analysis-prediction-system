@@ -1,0 +1,291 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Platform Features | Crime Data Analysis & Prediction System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .features-hero {
+        background: linear-gradient(135deg, #071B3A 0%, #102B52 65%, #0d2345 100%);
+        color: #FFFFFF;
+        padding: 5rem 0 4.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .features-hero::after {
+        content: '';
+        position: absolute;
+        top: -40%;
+        right: -15%;
+        width: 550px;
+        height: 550px;
+        background: radial-gradient(circle, rgba(32, 213, 245, 0.15) 0%, rgba(23, 105, 255, 0.05) 55%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .feature-module-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 18px;
+        padding: 2.25rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .feature-module-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 36px rgba(7, 27, 58, 0.08);
+        border-color: #CBD5E1;
+    }
+    .feature-module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--accent-cyan));
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+    .feature-module-card:hover::before {
+        opacity: 1;
+    }
+    .feature-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .feature-tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    .feature-btn {
+        margin-top: 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 10px;
+        padding: 0.65rem 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Features Hero Header -->
+<section class="features-hero">
+    <div class="container text-center position-relative" style="z-index: 1;">
+        <span class="badge bg-info bg-opacity-10 text-cyan border border-info border-opacity-25 px-3 py-2 rounded-pill small fw-bold text-uppercase mb-3 d-inline-block">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i> Architectural Suite
+        </span>
+        <h1 class="display-5 fw-bold text-white mb-3">Platform Intelligence Modules</h1>
+        <p class="lead text-white-50 mx-auto" style="max-width: 720px; font-size: 1.15rem;">
+            Explore the complete suite of analytical, semantic, and predictive capabilities engineered for forensic officers, crime analysts, and public safety teams.
+        </p>
+    </div>
+</section>
+
+<!-- Features Grid (8 Modules) -->
+<section class="py-5" style="background-color: var(--bg-color);">
+    <div class="container py-4">
+        <div class="row g-4">
+
+            <!-- 1. Crime Dataset Upload and Validation -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(23, 105, 255, 0.12); color: #1769FF;">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-primary-subtle text-primary">Data Ingestion</span>
+                        <h5 class="fw-bold text-navy mb-2">Dataset Upload &amp; Validation</h5>
+                        <p class="text-muted small mb-0">
+                            Ingest tabular CSV and Excel datasets with intelligent column alias normalization, duplicate detection, and automated data quality checks.
+                        </p>
+                    </div>
+                    <a href="{% url 'crime_data:upload' %}" class="btn btn-outline-primary feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Crime Data Analysis and Statistics -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(22, 163, 106, 0.12); color: #16A36A;">
+                            <i class="bi bi-bar-chart-line-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-success-subtle text-success">Statistical Analytics</span>
+                        <h5 class="fw-bold text-navy mb-2">Crime Data Analysis</h5>
+                        <p class="text-muted small mb-0">
+                            Examine offense frequencies, monthly trajectories, and yearly aggregations with dynamic category and jurisdiction filter matrices.
+                        </p>
+                    </div>
+                    <a href="{% url 'analysis:analysis' %}" class="btn btn-outline-success feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. Location and Hotspot Analysis -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B;">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-warning-subtle text-warning">Geospatial GIS</span>
+                        <h5 class="fw-bold text-navy mb-2">Location &amp; Hotspot Analysis</h5>
+                        <p class="text-muted small mb-0">
+                            Interactive Leaflet map visualization displaying spatial crime clusters, severity markers, and high-risk precinct rankings across real coordinates.
+                        </p>
+                    </div>
+                    <a href="{% url 'location_analysis:map' %}" class="btn btn-outline-warning feature-btn text-dark">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Crime Pattern Detection -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(13, 148, 136, 0.12); color: #0D9488;">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-info-subtle text-info">Pattern Recognition</span>
+                        <h5 class="fw-bold text-navy mb-2">Crime Pattern Detection</h5>
+                        <p class="text-muted small mb-0">
+                            Detect temporal peak hours, day-of-week incident waves, category surges, and statistical observations calculated from live incident records.
+                        </p>
+                    </div>
+                    <a href="{% url 'patterns:patterns' %}" class="btn btn-outline-info feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5. Crime Ontology Explorer -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(124, 58, 237, 0.12); color: #7C3AED;">
+                            <i class="bi bi-share-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-purple-subtle text-primary">Knowledge Graph</span>
+                        <h5 class="fw-bold text-navy mb-2">Crime Ontology Explorer</h5>
+                        <p class="text-muted small mb-0">
+                            Interactive D3.js force-directed knowledge graph integrating Web Ontology (OWL/RDF) triples, semantic relationships, and custom SPARQL querying.
+                        </p>
+                    </div>
+                    <a href="{% url 'ontology:explorer' %}" class="btn btn-outline-primary feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 6. Machine Learning Model Training -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(225, 29, 72, 0.12); color: #E11D48;">
+                            <i class="bi bi-cpu-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-danger-subtle text-danger">Machine Learning</span>
+                        <h5 class="fw-bold text-navy mb-2">ML Model Training</h5>
+                        <p class="text-muted small mb-0">
+                            Train regression and ensemble models (Random Forest, Gradient Boosting, Linear Regression) with real-time evaluation metrics including MAE, RMSE, and R².
+                        </p>
+                    </div>
+                    <a href="{% url 'model_training:train' %}" class="btn btn-outline-danger feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 7. Crime Trend Prediction -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(8, 145, 178, 0.12); color: #0891B2;">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <span class="feature-tag bg-info-subtle text-info">Predictive AI</span>
+                        <h5 class="fw-bold text-navy mb-2">Crime Trend Prediction</h5>
+                        <p class="text-muted small mb-0">
+                            Forecast future incident volumes across 1 to 12 months with confidence intervals, model performance telemetry, and ethical AI safeguards.
+                        </p>
+                    </div>
+                    <a href="{% url 'prediction:prediction' %}" class="btn btn-outline-info feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 8. Reports and Visualizations -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-module-card">
+                    <div>
+                        <div class="feature-icon-wrapper" style="background: rgba(100, 116, 139, 0.15); color: #475569;">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                        </div>
+                        <span class="feature-tag bg-secondary-subtle text-secondary">Reporting &amp; Visuals</span>
+                        <h5 class="fw-bold text-navy mb-2">Reports &amp; Visualizations</h5>
+                        <p class="text-muted small mb-0">
+                            Generate automated forensic PDF and CSV briefing reports alongside multi-chart visual dashboards spanning severity, hourly trends, and radar graphs.
+                        </p>
+                    </div>
+                    <a href="{% url 'reports:reports' %}" class="btn btn-outline-secondary feature-btn">
+                        <span>Open Module</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5 bg-white border-top">
+    <div class="container text-center py-4">
+        <h3 class="fw-bold text-navy mb-3">Ready to Analyze Crime Data?</h3>
+        <p class="text-muted mx-auto mb-4" style="max-width: 600px;">
+            Access the operational analytics dashboard to inspect live databases, upload incident reports, or configure predictive modeling workflows.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-glow-blue px-4 py-2">
+                    <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-glow-blue px-4 py-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+                </a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-outline-secondary px-4 py-2">
+                    <i class="bi bi-person-plus me-1"></i> Create Account
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

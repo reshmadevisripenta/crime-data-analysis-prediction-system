@@ -85,9 +85,8 @@ def register_view(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
-@require_POST
 def logout_view(request):
-    """Logs out the user via POST request only for security."""
+    """Logs out the user and redirects to login with confirmation."""
     username = request.user.username if request.user.is_authenticated else "Anonymous"
     logout(request)
     logger.info(f"User {username} logged out.")
