@@ -45,3 +45,8 @@ media/reports/*.xlsx
 Thumbs.db
 test_db.sqlite3
 __pycache__/
+.env
+*.sqlite3
+__pycache__/
+venv/
+.venv/
