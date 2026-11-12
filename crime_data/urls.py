@@ -13,6 +13,8 @@ urlpatterns = [
     path('upload/', views.dataset_upload_view, name='upload_dataset'),
     path('preview/<int:pk>/', views.dataset_preview_view, name='dataset_preview'),
     path('download/<int:pk>/', views.download_cleaned_dataset_view, name='download_cleaned'),
+    path('remap/<int:pk>/', views.remap_dataset_view, name='remap_dataset'),
+    path('template/download/', views.download_template_view, name='download_template'),
     path('delete-dataset/<int:pk>/', views.delete_dataset_view, name='delete_dataset'),
     # Aliases for backwards-compat with tests and templates
     path('upload-alias/', views.dataset_upload_view, name='upload'),

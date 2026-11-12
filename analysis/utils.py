@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Count
+from django.db.models import Count, Max
 from crime_data.models import CrimeRecord
 
 logger = logging.getLogger(__name__)
@@ -23,9 +23,17 @@ def get_crime_frequency_by_category(queryset):
 def get_monthly_trends(queryset, months=12):
     """
     Returns dict: {'labels': ['Jan 2024', ...], 'data': [12, 15, ...]}
-    for the last N months.
+    Anchors to the latest record date present in the dataset so historical records are accurately displayed.
     """
-    end_date = datetime.now()
+    if not queryset.exists():
+        return {'labels': [], 'data': []}
+
+    latest_date_agg = queryset.aggregate(Max('incident_date'))['incident_date__max']
+    if latest_date_agg:
+        end_date = datetime.combine(latest_date_agg, datetime.min.time())
+    else:
+        end_date = datetime.now()
+
     start_date = (end_date - relativedelta(months=months - 1)).replace(day=1)
     
     labels = []
@@ -68,15 +76,40 @@ def get_yearly_trends(queryset):
     return {'labels': labels, 'data': data}
 
 
+def get_location_counts(queryset, limit=8):
+    """
+    Returns dict {location_name: count} for top crime locations.
+    """
+    locs = (
+        queryset.values('location__name', 'location__city')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:limit]
+    )
+    result = {}
+    for item in locs:
+        name = item['location__name'] or 'Unknown'
+        city = item['location__city']
+        label = f"{name} ({city})" if city and city != name else name
+        result[label] = item['count']
+    return result
+
+
+def get_severity_distribution(queryset):
+    """
+    Returns dict with count of incidents per severity level:
+    {'Critical': count, 'High': count, 'Medium': count, 'Low': count}
+    """
+    return {
+        'Critical': queryset.filter(severity='critical').count(),
+        'High': queryset.filter(severity='high').count(),
+        'Medium': queryset.filter(severity='medium').count(),
+        'Low': queryset.filter(severity='low').count(),
+    }
+
+
 def get_category_comparison(queryset, location1_id, location2_id):
     """
     Compares crime frequency by category between two locations.
-    Returns:
-    {
-      'categories': [...],
-      'location1': {'name': str, 'counts': [...]},
-      'location2': {'name': str, 'counts': [...]}
-    }
     """
     from crime_data.models import Location
     loc1 = Location.objects.filter(pk=location1_id).first()

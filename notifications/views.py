@@ -14,12 +14,32 @@ def notifications_view(request):
     """
     Renders user's notifications center with status filtering and pagination.
     """
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    unread_count = notifications.filter(is_read=False).count()
+    from django.core.paginator import Paginator
+    
+    qs = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    selected_unread = request.GET.get('unread')
+    if selected_unread == '1':
+        qs = qs.filter(is_read=False)
+
+    selected_category = request.GET.get('category')
+    if selected_category:
+        qs = qs.filter(category=selected_category)
+
+    total_count = Notification.objects.filter(user=request.user).count()
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    paginator = Paginator(qs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(request, 'notifications/notifications.html', {
-        'notifications': notifications,
+        'notifications': page_obj,
+        'page_obj': page_obj,
         'unread_count': unread_count,
+        'total_count': total_count,
+        'selected_category': selected_category or '',
+        'selected_unread': selected_unread or '',
     })
 
 

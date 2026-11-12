@@ -37,12 +37,15 @@ def prediction_view(request):
         .order_by('-prediction_date', '-id')[:10]
     )
 
+    selected_model_id = request.GET.get('model_id', '')
+
     context = {
         'models': models_available,
         'locations': locations,
         'categories': categories,
         'forecast_periods': PredictionResult.FORECAST_PERIOD_CHOICES,
         'past_predictions': past_predictions,
+        'selected_model_id': str(selected_model_id),
     }
     return render(request, 'prediction/prediction.html', context)
 

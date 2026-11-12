@@ -1,0 +1,51 @@
+record_type,date,state,district,area,crime_type,reported_cases
+SYNTHETIC_DEMO_NOT_REAL,2023-01-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,12
+SYNTHETIC_DEMO_NOT_REAL,2023-02-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,10
+SYNTHETIC_DEMO_NOT_REAL,2023-03-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,14
+SYNTHETIC_DEMO_NOT_REAL,2023-04-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,11
+SYNTHETIC_DEMO_NOT_REAL,2023-05-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,13
+SYNTHETIC_DEMO_NOT_REAL,2023-06-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,15
+SYNTHETIC_DEMO_NOT_REAL,2023-07-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,8
+SYNTHETIC_DEMO_NOT_REAL,2023-08-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,9
+SYNTHETIC_DEMO_NOT_REAL,2023-09-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,11
+SYNTHETIC_DEMO_NOT_REAL,2023-10-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,10
+SYNTHETIC_DEMO_NOT_REAL,2023-11-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,12
+SYNTHETIC_DEMO_NOT_REAL,2023-12-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,13
+SYNTHETIC_DEMO_NOT_REAL,2024-01-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,14
+SYNTHETIC_DEMO_NOT_REAL,2024-02-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,12
+SYNTHETIC_DEMO_NOT_REAL,2024-03-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,16
+SYNTHETIC_DEMO_NOT_REAL,2024-04-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,13
+SYNTHETIC_DEMO_NOT_REAL,2024-05-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,15
+SYNTHETIC_DEMO_NOT_REAL,2024-06-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,17
+SYNTHETIC_DEMO_NOT_REAL,2024-07-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,10
+SYNTHETIC_DEMO_NOT_REAL,2024-08-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,11
+SYNTHETIC_DEMO_NOT_REAL,2024-09-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,13
+SYNTHETIC_DEMO_NOT_REAL,2024-10-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,12
+SYNTHETIC_DEMO_NOT_REAL,2024-11-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,14
+SYNTHETIC_DEMO_NOT_REAL,2024-12-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,15
+SYNTHETIC_DEMO_NOT_REAL,2025-01-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,15
+SYNTHETIC_DEMO_NOT_REAL,2025-02-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,14
+SYNTHETIC_DEMO_NOT_REAL,2025-03-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,18
+SYNTHETIC_DEMO_NOT_REAL,2025-04-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,16
+SYNTHETIC_DEMO_NOT_REAL,2025-05-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,17
+SYNTHETIC_DEMO_NOT_REAL,2025-06-15,Andhra Pradesh,East Godavari,Rajahmundry,Theft,19
+SYNTHETIC_DEMO_NOT_REAL,2025-07-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,12
+SYNTHETIC_DEMO_NOT_REAL,2025-08-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,14
+SYNTHETIC_DEMO_NOT_REAL,2025-09-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,15
+SYNTHETIC_DEMO_NOT_REAL,2025-10-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,14
+SYNTHETIC_DEMO_NOT_REAL,2025-11-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,16
+SYNTHETIC_DEMO_NOT_REAL,2025-12-15,Andhra Pradesh,East Godavari,Rajahmundry,Cybercrime,17
+SYNTHETIC_DEMO_NOT_REAL,2023-01-15,Andhra Pradesh,NTR,Vijayawada,Theft,18
+SYNTHETIC_DEMO_NOT_REAL,2023-02-15,Andhra Pradesh,NTR,Vijayawada,Theft,16
+SYNTHETIC_DEMO_NOT_REAL,2023-03-15,Andhra Pradesh,NTR,Vijayawada,Theft,20
+SYNTHETIC_DEMO_NOT_REAL,2023-04-15,Andhra Pradesh,NTR,Vijayawada,Theft,17
+SYNTHETIC_DEMO_NOT_REAL,2023-05-15,Andhra Pradesh,NTR,Vijayawada,Theft,19
+SYNTHETIC_DEMO_NOT_REAL,2023-06-15,Andhra Pradesh,NTR,Vijayawada,Theft,21
+SYNTHETIC_DEMO_NOT_REAL,2024-01-15,Andhra Pradesh,NTR,Vijayawada,Theft,20
+SYNTHETIC_DEMO_NOT_REAL,2024-02-15,Andhra Pradesh,NTR,Vijayawada,Theft,18
+SYNTHETIC_DEMO_NOT_REAL,2024-03-15,Andhra Pradesh,NTR,Vijayawada,Theft,22
+SYNTHETIC_DEMO_NOT_REAL,2024-04-15,Andhra Pradesh,NTR,Vijayawada,Theft,19
+SYNTHETIC_DEMO_NOT_REAL,2025-01-15,Andhra Pradesh,NTR,Vijayawada,Theft,23
+SYNTHETIC_DEMO_NOT_REAL,2025-02-15,Andhra Pradesh,NTR,Vijayawada,Theft,21
+SYNTHETIC_DEMO_NOT_REAL,2025-03-15,Andhra Pradesh,NTR,Vijayawada,Theft,24
+SYNTHETIC_DEMO_NOT_REAL,2025-04-15,Andhra Pradesh,NTR,Vijayawada,Theft,22

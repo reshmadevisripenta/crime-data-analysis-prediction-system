@@ -6,9 +6,11 @@ from crime_data.models import DatasetUpload
 class MLModel(models.Model):
     ALGORITHM_CHOICES = [
         ('random_forest', 'Random Forest Regressor'),
+        ('gradient_boosting', 'Gradient Boosting Regressor'),
         ('linear_regression', 'Linear Regression'),
         ('decision_tree', 'Decision Tree Regressor'),
-        ('gradient_boosting', 'Gradient Boosting Regressor'),
+        ('ridge', 'Ridge Regression'),
+        ('svr', 'Support Vector Regressor'),
     ]
 
     STATUS_CHOICES = [
@@ -21,7 +23,7 @@ class MLModel(models.Model):
     name = models.CharField(max_length=150)
     algorithm = models.CharField(max_length=50, choices=ALGORITHM_CHOICES)
     version = models.CharField(max_length=50, default='v1.0')
-    dataset = models.ForeignKey(DatasetUpload, on_delete=models.CASCADE, related_name='trained_models')
+    dataset = models.ForeignKey(DatasetUpload, on_delete=models.SET_NULL, null=True, blank=True, related_name='trained_models')
     target_variable = models.CharField(max_length=100, default='crime_count')
     features = models.JSONField(default=list, help_text='List of feature names used for training')
     hyperparameters = models.JSONField(default=dict, blank=True, help_text='Hyperparameters configuration')

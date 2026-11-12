@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.conf import settings
+from django.utils import timezone
 
 from accounts.decorators import analyst_required, admin_required
 from crime_data.models import Location, CrimeCategory
@@ -32,6 +33,12 @@ def reports_view(request):
         'report_types': Report.REPORT_TYPE_CHOICES,
         'locations': locations,
         'categories': categories,
+        'selected_location': str(request.GET.get('location_id', request.GET.get('location', ''))),
+        'selected_category': str(request.GET.get('category_id', request.GET.get('category', ''))),
+        'selected_location_id': str(request.GET.get('location_id', request.GET.get('location', ''))),
+        'selected_category_id': str(request.GET.get('category_id', request.GET.get('category', ''))),
+        'date_from': request.GET.get('date_from', ''),
+        'date_to': request.GET.get('date_to', ''),
     }
     return render(request, 'reports/reports.html', context)
 
@@ -43,16 +50,23 @@ def generate_report_view(request):
     Generates a new Report and builds PDF / CSV exports.
     Notifies user when ready.
     """
-    name = request.POST.get('name', 'Crime Report').strip()
+    raw_name = request.POST.get('name', '').strip()
     report_type = request.POST.get('report_type', 'crime_analysis')
     description = request.POST.get('description', '').strip()
     date_from = request.POST.get('date_from') or None
     date_to = request.POST.get('date_to') or None
-    location_id = request.POST.get('location_id') or None
-    category_id = request.POST.get('category_id') or None
+    location_id = request.POST.get('location_id') or request.POST.get('location') or None
+    category_id = request.POST.get('category_id') or request.POST.get('category') or None
 
-    location = Location.objects.filter(pk=location_id).first() if location_id else None
-    category = CrimeCategory.objects.filter(pk=category_id).first() if category_id else None
+    location = Location.objects.filter(pk=int(location_id)).first() if (location_id and str(location_id).isdigit()) else None
+    category = CrimeCategory.objects.filter(pk=int(category_id)).first() if (category_id and str(category_id).isdigit()) else None
+
+    if not raw_name:
+        type_lbl = dict(Report.REPORT_TYPE_CHOICES).get(report_type, 'Crime Analysis')
+        loc_lbl = f" ({location.name})" if location else ""
+        name = f"{type_lbl}{loc_lbl} - {timezone.now().strftime('%b %d, %Y')}"
+    else:
+        name = raw_name
 
     report = Report.objects.create(
         name=name,

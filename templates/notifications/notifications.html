@@ -10,10 +10,13 @@
             <p class="text-muted small mb-0">Live alerts for anomaly surges, completed ML trainings, and data quality triggers.</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/notifications/mark-read/" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-check-all me-1"></i> Mark All as Read
-            </a>
-            <a href="/accounts/settings/" class="btn btn-sm btn-light border">
+            <form method="POST" action="{% url 'notifications:mark_all_read' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-check-all me-1"></i> Mark All as Read
+                </button>
+            </form>
+            <a href="{% url 'accounts:settings' %}" class="btn btn-sm btn-light border">
                 <i class="bi bi-sliders me-1"></i> Notification Rules
             </a>
         </div>
@@ -25,16 +28,29 @@
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <ul class="nav nav-pills small" id="alertTabs">
                     <li class="nav-item">
-                        <a class="nav-link active py-1 px-3" href="/notifications/">All (14)</a>
+                        <a class="nav-link {% if not selected_unread and not selected_category %}active{% endif %} py-1 px-3" href="{% url 'notifications:notifications' %}">
+                            All ({{ total_count }})
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link py-1 px-3" href="/notifications/?unread=1">Unread (3)</a>
+                        <a class="nav-link {% if selected_unread == '1' %}active{% endif %} py-1 px-3" href="{% url 'notifications:notifications' %}?unread=1">
+                            Unread ({{ unread_count }})
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link py-1 px-3" href="/notifications/?category=high_alert">High Alert Warnings</a>
+                        <a class="nav-link {% if selected_category == 'upload' %}active{% endif %} py-1 px-3" href="{% url 'notifications:notifications' %}?category=upload">
+                            Uploads
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link py-1 px-3" href="/notifications/?category=ml_training">ML Pipelines</a>
+                        <a class="nav-link {% if selected_category == 'training' %}active{% endif %} py-1 px-3" href="{% url 'notifications:notifications' %}?category=training">
+                            ML Pipelines
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if selected_category == 'report' %}active{% endif %} py-1 px-3" href="{% url 'notifications:notifications' %}?category=report">
+                            Reports
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -45,94 +61,98 @@
     <div class="card card-custom">
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
-                <!-- Notification 1 (Unread, Critical) -->
-                <div class="list-group-item p-4 bg-light bg-opacity-50 border-start border-4 border-danger">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="p-2 bg-danger bg-opacity-10 text-danger rounded-3 fs-4">
-                            <i class="bi bi-exclamation-octagon-fill"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark">High-Alert Hotspot Spike Detected in Central Ward</h6>
-                                <span class="badge bg-danger">Critical Alert</span>
+                {% if notifications %}
+                    {% for notif in notifications %}
+                    <div class="list-group-item p-4 {% if not notif.is_read %}bg-light bg-opacity-50 border-start border-4 border-{% if notif.notification_type == 'error' %}danger{% elif notif.notification_type == 'warning' %}warning{% elif notif.notification_type == 'success' %}success{% else %}primary{% endif %}{% else %}opacity-75{% endif %}">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="p-2 bg-{% if notif.notification_type == 'error' %}danger{% elif notif.notification_type == 'warning' %}warning{% elif notif.notification_type == 'success' %}success{% else %}primary{% endif %} bg-opacity-10 text-{% if notif.notification_type == 'error' %}danger{% elif notif.notification_type == 'warning' %}warning{% elif notif.notification_type == 'success' %}success{% else %}primary{% endif %} rounded-3 fs-4">
+                                {% if notif.notification_type == 'error' %}
+                                    <i class="bi bi-exclamation-octagon-fill"></i>
+                                {% elif notif.notification_type == 'warning' %}
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                {% elif notif.notification_type == 'success' %}
+                                    <i class="bi bi-check-circle-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill"></i>
+                                {% endif %}
                             </div>
-                            <p class="text-secondary small mb-2">
-                                Modus operandi anomaly triggered: 4 armed robberies logged within 3 hours near 7th Ave Station. Immediate tactical reallocation recommended.
-                            </p>
-                            <div class="d-flex align-items-center gap-3 small text-muted">
-                                <span><i class="bi bi-clock me-1"></i>15 minutes ago</span>
-                                <a href="/location/" class="text-primary fw-semibold text-decoration-none">Inspect Hotspot Map &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Notification 2 (Unread, Success) -->
-                <div class="list-group-item p-4 bg-light bg-opacity-50 border-start border-4 border-success">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="p-2 bg-success bg-opacity-10 text-success rounded-3 fs-4">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark">Model Training Completed Successfully</h6>
-                                <span class="badge bg-success-subtle text-success">Pipeline</span>
-                            </div>
-                            <p class="text-secondary small mb-2">
-                                RandomForest_v2.4 finished training on 12,480 incident samples. Validation R²: 0.912, MAE: 2.48. Deployed to production endpoint.
-                            </p>
-                            <div class="d-flex align-items-center gap-3 small text-muted">
-                                <span><i class="bi bi-clock me-1"></i>2 hours ago</span>
-                                <a href="/model-training/" class="text-primary fw-semibold text-decoration-none">Review Evaluation Metrics &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Notification 3 (Unread, Info) -->
-                <div class="list-group-item p-4 bg-light bg-opacity-50 border-start border-4 border-info">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="p-2 bg-info bg-opacity-10 text-info rounded-3 fs-4">
-                            <i class="bi bi-share-fill"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark">Ontology Knowledge Triples Synchronized</h6>
-                                <span class="badge bg-info-subtle text-info">Ontology</span>
-                            </div>
-                            <p class="text-secondary small mb-2">
-                                1,240 new semantic triples extracted and asserted into the RDF ontology knowledge graph from latest dataset upload.
-                            </p>
-                            <div class="d-flex align-items-center gap-3 small text-muted">
-                                <span><i class="bi bi-clock me-1"></i>5 hours ago</span>
-                                <a href="/ontology/" class="text-primary fw-semibold text-decoration-none">Launch Knowledge Graph &rarr;</a>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-bold mb-0 text-dark">{{ notif.title }}</h6>
+                                    <span class="badge bg-light text-dark border">{{ notif.get_category_display|default:notif.category|title }}</span>
+                                </div>
+                                <p class="text-secondary small mb-2">
+                                    {{ notif.message }}
+                                </p>
+                                <div class="d-flex align-items-center justify-content-between small text-muted flex-wrap gap-2">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span><i class="bi bi-clock me-1"></i>{{ notif.created_at|date:"M d, Y H:i" }}</span>
+                                        {% if notif.action_url %}
+                                            <a href="{{ notif.action_url }}" class="text-primary fw-semibold text-decoration-none">
+                                                View Details &rarr;
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% if not notif.is_read %}
+                                    <form method="POST" action="{% url 'notifications:mark_read' notif.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" style="font-size: 0.78rem;">
+                                            <i class="bi bi-check2 me-1"></i>Mark as Read
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Notification 4 (Read, General) -->
-                <div class="list-group-item p-4 border-start border-4 border-secondary opacity-75">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="p-2 bg-secondary bg-opacity-10 text-secondary rounded-3 fs-4">
-                            <i class="bi bi-cloud-check-fill"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-semibold mb-0 text-dark">Dataset Upload Completed: metro_crime_log_2024_q3.csv</h6>
-                                <span class="badge bg-light text-muted border">Archived</span>
-                            </div>
-                            <p class="text-muted small mb-2">
-                                12,480 total rows processed. 12,445 records verified with zero schema corruption.
-                            </p>
-                            <div class="d-flex align-items-center gap-3 small text-muted">
-                                <span><i class="bi bi-clock me-1"></i>Yesterday at 14:22</span>
-                            </div>
-                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell-slash fs-1 text-muted d-block mb-2 opacity-50"></i>
+                        <h6 class="fw-bold text-dark mb-1">No Notifications Found</h6>
+                        <p class="text-muted small mb-0">You have no active alerts matching the selected filter.</p>
                     </div>
-                </div>
+                {% endif %}
             </div>
         </div>
+
+        <!-- Pagination Footer -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center bg-light bg-opacity-50 flex-wrap gap-2">
+            <span class="text-muted small">
+                Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} alerts)
+            </span>
+            <nav aria-label="Notifications navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_unread %}&unread={{ selected_unread }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if selected_unread %}&unread={{ selected_unread }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_unread %}&unread={{ selected_unread }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

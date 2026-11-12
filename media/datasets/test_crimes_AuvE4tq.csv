@@ -1,0 +1,11 @@
+incident_date,category,location,description,severity,status
+2024-01-15,Theft,Central Area,Phone theft reported,low,reported
+2024-01-16,Theft,Central Area,Bicycle theft reported,low,solved
+2024-01-17,Theft,Central Area,Bag snatching,medium,under_investigation
+2024-01-18,Theft,Central Area,Shop theft,low,closed
+2024-01-19,Theft,Central Area,Wallet pickpocketed,low,solved
+2024-01-20,Theft,Central Area,Vehicle break-in,medium,reported
+2024-01-21,Theft,Central Area,Locker broken,high,under_investigation
+2024-01-22,Theft,Central Area,Store burglary,high,solved
+2024-01-23,Theft,Central Area,Item stolen,low,reported
+2024-01-24,Theft,Central Area,Purse stolen,low,solved

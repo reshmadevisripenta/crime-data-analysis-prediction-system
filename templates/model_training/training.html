@@ -16,16 +16,27 @@
         content: '';
         position: absolute;
         top: 50%;
-        left: 10%;
-        right: 10%;
+        left: 12%;
+        right: 12%;
         height: 2px;
         background: #E2E8F0;
         z-index: 1;
         transform: translateY(-50%);
     }
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
     .step-dot {
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         background: #FFFFFF;
         border: 2px solid #CBD5E1;
@@ -33,178 +44,417 @@
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: #64748B;
-        position: relative;
-        z-index: 2;
+        transition: all 0.25s ease;
+    }
+    .step-item:hover .step-dot {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
     }
     .step-dot.active {
         background: var(--primary-blue);
         border-color: var(--primary-blue);
         color: #FFFFFF;
-        box-shadow: 0 0 0 4px rgba(23, 105, 255, 0.2);
+        box-shadow: 0 0 0 5px rgba(23, 105, 255, 0.2);
     }
     .step-dot.completed {
-        background: var(--success-color);
-        border-color: var(--success-color);
+        background: var(--success);
+        border-color: var(--success);
         color: #FFFFFF;
+    }
+    .wizard-panel {
+        display: none;
+    }
+    .wizard-panel.active {
+        display: block;
+        animation: fadeIn 0.25s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .progress-bar-animated-custom {
+        background: linear-gradient(90deg, #1769FF, #20D5F5, #1769FF);
+        background-size: 200% 100%;
+        animation: progressGradient 1.5s linear infinite;
+    }
+    @keyframes progressGradient {
+        0% { background-position: 100% 0; }
+        100% { background-position: -100% 0; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <!-- Training Setup Card -->
+    <!-- Main Wizard Card -->
     <div class="card card-custom mb-4">
-        <div class="card-header-custom">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="card-title-custom"><i class="bi bi-cpu-fill text-primary me-2"></i>Configure &amp; Train Predictive Model</h5>
-                <small class="text-muted">Select algorithms, feature vectors, and hyperparameter grids</small>
+                <h5 class="card-title-custom"><i class="bi bi-cpu-fill text-primary me-2"></i>Machine Learning Model Training Pipeline</h5>
+                <small class="text-muted">3-Stage Guided Workflow: Ingestion &rarr; Model Training &rarr; Validation &amp; Metrics</small>
             </div>
-            <span class="badge bg-primary-subtle text-primary">Scikit-Learn v1.3</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25">Scikit-Learn ML Suite</span>
         </div>
         <div class="card-body p-4">
-            <!-- Training Pipeline Stepper -->
+            <!-- 3-Stage Stepper Navigation -->
             <div class="step-indicator-wrapper">
-                <div class="d-flex flex-column align-items-center">
-                    <div class="step-dot completed"><i class="bi bi-check"></i></div>
-                    <small class="mt-2 fw-semibold text-success">1. Ingestion</small>
-                </div>
-                <div class="d-flex flex-column align-items-center">
-                    <div class="step-dot active">2</div>
-                    <small class="mt-2 fw-semibold text-primary">2. Model Training</small>
-                </div>
-                <div class="d-flex flex-column align-items-center">
-                    <div class="step-dot">3</div>
-                    <small class="mt-2 fw-semibold text-muted">3. Validation &amp; Metrics</small>
-                </div>
+                <button type="button" class="step-item" onclick="switchStage(1)">
+                    <div class="step-dot" id="dot-1">1</div>
+                    <small class="mt-2 fw-semibold text-secondary" id="label-1">1. Dataset Ingestion</small>
+                </button>
+                <button type="button" class="step-item" onclick="switchStage(2)">
+                    <div class="step-dot" id="dot-2">2</div>
+                    <small class="mt-2 fw-semibold text-secondary" id="label-2">2. Model Training</small>
+                </button>
+                <button type="button" class="step-item" onclick="switchStage(3)">
+                    <div class="step-dot" id="dot-3">3</div>
+                    <small class="mt-2 fw-semibold text-secondary" id="label-3">3. Validation &amp; Metrics</small>
+                </button>
             </div>
 
-            <form method="POST" action="/model-training/train/" id="trainingForm">
-                {% csrf_token %}
+            <!-- ============================================================== -->
+            <!-- STAGE 1: Dataset Ingestion and Validation -->
+            <!-- ============================================================== -->
+            <div id="stage-panel-1" class="wizard-panel">
+                <div class="alert bg-primary-subtle border-0 text-navy mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <i class="bi bi-database-check fs-5 me-2 text-primary"></i>
+                        <strong>Stage 1: Dataset Ingestion and Validation Audit</strong>
+                        <p class="mb-0 small text-muted">Verify incoming crime incident records, check schema completeness, and validate sample readiness before training.</p>
+                    </div>
+                    <a href="{% url 'crime_data:upload_dataset' %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload New Dataset
+                    </a>
+                </div>
+
                 <div class="row g-3 mb-4">
-                    <!-- Dataset Selection -->
-                    <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">Target Ingestion Dataset *</label>
-                        <select name="dataset_id" class="form-select" required>
-                            <option value="1">metro_crime_log_2024_q3.csv (12,480 Records)</option>
-                            <option value="2">precinct_north_logs.xlsx (3,210 Records)</option>
-                            <option value="all" selected>All Combined Historical Records (15,690 Records)</option>
-                        </select>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Total Ingested Records</span>
+                            <h3 class="fw-bold text-navy mt-1 mb-0">{{ total_records_count|default:"0" }}</h3>
+                            <small class="text-success"><i class="bi bi-check-circle me-1"></i>Active historical records</small>
+                        </div>
                     </div>
-
-                    <!-- Algorithm Selection -->
-                    <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">Regression Algorithm *</label>
-                        <select name="algorithm" class="form-select" required>
-                            <option value="random_forest" selected>Random Forest Regressor (Ensemble Trees)</option>
-                            <option value="gradient_boosting">Gradient Boosting Regressor (GBR)</option>
-                            <option value="linear_regression">Linear Regression (Baseline)</option>
-                            <option value="ridge">Ridge Regression (L2 Regularized)</option>
-                            <option value="svr">Support Vector Regressor (RBF Kernel)</option>
-                        </select>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Completed Datasets</span>
+                            <h3 class="fw-bold text-navy mt-1 mb-0">{{ datasets|length }}</h3>
+                            <small class="text-muted">Ingested batches</small>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Feature Selection Checkboxes -->
-                <div class="mb-4">
-                    <label class="form-label small fw-semibold text-secondary d-block mb-2">Feature Vector Inclusions</label>
-                    <div class="row g-2">
-                        <div class="col-sm-6 col-md-3">
-                            <div class="form-check p-3 border rounded bg-light">
-                                <input class="form-check-input" type="checkbox" name="features" value="temporal_hour" id="f1" checked>
-                                <label class="form-check-label small fw-semibold" for="f1">Temporal Hour of Day</label>
-                            </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Schema Validation</span>
+                            <h3 class="fw-bold text-success mt-1 mb-0">100% Passed</h3>
+                            <small class="text-success"><i class="bi bi-shield-check me-1"></i>Standard schema compliant</small>
                         </div>
-                        <div class="col-sm-6 col-md-3">
-                            <div class="form-check p-3 border rounded bg-light">
-                                <input class="form-check-input" type="checkbox" name="features" value="day_of_week" id="f2" checked>
-                                <label class="form-check-label small fw-semibold" for="f2">Day of Week Cycle</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-md-3">
-                            <div class="form-check p-3 border rounded bg-light">
-                                <input class="form-check-input" type="checkbox" name="features" value="hotspot_density" id="f3" checked>
-                                <label class="form-check-label small fw-semibold" for="f3">Hotspot Density Score</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-md-3">
-                            <div class="form-check p-3 border rounded bg-light">
-                                <input class="form-check-input" type="checkbox" name="features" value="historical_lag" id="f4" checked>
-                                <label class="form-check-label small fw-semibold" for="f4">30-Day Lag Frequency</label>
-                            </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">ML Pipeline Readiness</span>
+                            <h3 class="fw-bold text-primary mt-1 mb-0">{% if total_records_count >= 5 %}Verified{% else %}Pending{% endif %}</h3>
+                            <small class="text-muted">{% if total_records_count >= 5 %}Ready for training{% else %}Needs &ge; 5 records{% endif %}</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Hyperparameters Grid -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold text-secondary">Number of Estimators (Trees)</label>
-                        <input type="number" name="n_estimators" class="form-control" value="150" min="10" max="500">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold text-secondary">Max Tree Depth</label>
-                        <input type="number" name="max_depth" class="form-control" value="15" min="2" max="50">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold text-secondary">Train / Test Split Ratio</label>
-                        <select name="test_size" class="form-select">
-                            <option value="0.2" selected>80% Train / 20% Test Split</option>
-                            <option value="0.3">70% Train / 30% Test Split</option>
-                        </select>
-                    </div>
+                <!-- Dataset Catalog Table -->
+                <div class="table-responsive border rounded-3 mb-4">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light text-uppercase">
+                            <tr>
+                                <th class="ps-3">Dataset Batch</th>
+                                <th>Total Records</th>
+                                <th>Valid Records</th>
+                                <th>Status</th>
+                                <th>Uploaded Date</th>
+                                <th class="pe-3 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ps-3 fw-bold text-navy">
+                                    <i class="bi bi-stack text-primary me-2"></i>All Combined Historical Records
+                                </td>
+                                <td class="fw-semibold">{{ total_records_count }}</td>
+                                <td class="text-success fw-semibold">{{ total_records_count }}</td>
+                                <td><span class="badge bg-success-subtle text-success">Aggregated</span></td>
+                                <td class="text-muted">Historical Baseline</td>
+                                <td class="pe-3 text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-3" onclick="selectDatasetAndProceed('all')">
+                                        Use For Training &rarr;
+                                    </button>
+                                </td>
+                            </tr>
+                            {% for ds in datasets %}
+                            <tr>
+                                <td class="ps-3 fw-semibold">
+                                    <i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>{{ ds.original_filename }}
+                                </td>
+                                <td>{{ ds.total_records }}</td>
+                                <td class="text-success fw-semibold">{{ ds.valid_records }}</td>
+                                <td><span class="badge bg-success-subtle text-success">{{ ds.status|title }}</span></td>
+                                <td class="text-muted">{{ ds.uploaded_at|date:"M d, Y H:i" }}</td>
+                                <td class="pe-3 text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-3" onclick="selectDatasetAndProceed('{{ ds.id }}')">
+                                        Use For Training &rarr;
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary-blue px-4 py-2 fs-6">
-                        <i class="bi bi-play-circle-fill me-2"></i> Launch Model Training Pipeline
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'crime_data:record_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-table me-1"></i> View All Ingested Records
+                    </a>
+                    <button type="button" class="btn btn-primary-blue px-4" onclick="switchStage(2)">
+                        Proceed to Stage 2: Model Training <i class="bi bi-arrow-right ms-1"></i>
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Active Model Evaluation Metrics (Row of 4) -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card card-custom p-3 border-start border-4 border-success">
-                <span class="text-muted small fw-semibold text-uppercase">R² Determination Score</span>
-                <h3 class="fw-bold text-success mt-1 mb-0">{{ active_model.r2_score|default:"0.912" }}</h3>
-                <small class="text-success"><i class="bi bi-arrow-up-short"></i> +12% over baseline</small>
             </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card card-custom p-3 border-start border-4 border-primary">
-                <span class="text-muted small fw-semibold text-uppercase">Mean Absolute Error (MAE)</span>
-                <h3 class="fw-bold text-navy mt-1 mb-0">{{ active_model.mae|default:"2.48" }}</h3>
-                <small class="text-muted">Incidents variance</small>
+            <!-- ============================================================== -->
+            <!-- STAGE 2: Model Training Configuration & Pipeline Launch -->
+            <!-- ============================================================== -->
+            <div id="stage-panel-2" class="wizard-panel">
+                <form method="POST" action="{% url 'model_training:run_training' %}" id="trainingForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-4">
+                        <!-- Dataset Selection -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Target Ingestion Dataset *</label>
+                            <select name="dataset_id" id="datasetSelectInput" class="form-select" required>
+                                <option value="all" {% if selected_dataset_id == 'all' or not selected_dataset_id %}selected{% endif %}>
+                                    All Combined Historical Records ({{ total_records_count|default:"0" }} Records)
+                                </option>
+                                {% for ds in datasets %}
+                                    <option value="{{ ds.id }}" {% if selected_dataset_id == ds.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ ds.original_filename }} ({{ ds.valid_records|default:ds.total_records }} Records)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted" style="font-size:0.75rem;">'All Combined' aggregates all verified datasets without throwing ID errors</small>
+                        </div>
+
+                        <!-- Algorithm Selection -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Regression Algorithm *</label>
+                            <select name="algorithm" class="form-select" required>
+                                {% for code, label in algorithms %}
+                                    <option value="{{ code }}" {% if code == 'random_forest' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted" style="font-size:0.75rem;">Supervised estimators with hyperparameter tuning</small>
+                        </div>
+                    </div>
+
+                    <!-- Feature Selection Checkboxes -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-secondary d-block mb-2">Feature Vector Inclusions</label>
+                        <div class="row g-2">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="checkbox" name="features" value="category_id" id="f1" checked>
+                                    <label class="form-check-label small fw-semibold" for="f1">Crime Offense Category</label>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="checkbox" name="features" value="location_id" id="f2" checked>
+                                    <label class="form-check-label small fw-semibold" for="f2">Location / Jurisdiction</label>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="checkbox" name="features" value="month" id="f3" checked>
+                                    <label class="form-check-label small fw-semibold" for="f3">Monthly Seasonality</label>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="checkbox" name="features" value="day_of_week" id="f4" checked>
+                                    <label class="form-check-label small fw-semibold" for="f4">Day of Week Cycle</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hyperparameters Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Number of Estimators</label>
+                            <input type="number" name="n_estimators" class="form-control" value="100" min="10" max="500">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Max Tree Depth</label>
+                            <input type="number" name="max_depth" class="form-control" value="15" min="2" max="50">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Train / Test Split</label>
+                            <select name="test_size" class="form-select">
+                                <option value="0.2" selected>80% Train / 20% Test (Chronological)</option>
+                                <option value="0.3">70% Train / 30% Test (Chronological)</option>
+                                <option value="0.1">90% Train / 10% Test (Chronological)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Model Version / Tag</label>
+                            <input type="text" name="version" class="form-control" value="v1.0" placeholder="e.g. v1.0">
+                        </div>
+                    </div>
+
+                    <!-- Training Progress Bar Indicator (Visible during pipeline execution) -->
+                    <div id="trainingProgressBox" class="p-3 border rounded-3 bg-light mb-4" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-bold text-navy" id="progressStatusText">
+                                <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
+                                Training Regression Pipeline...
+                            </span>
+                            <span class="badge bg-primary text-white" id="progressPercentBadge">Running</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar progress-bar-animated-custom" role="progressbar" style="width: 100%;"></div>
+                        </div>
+                        <small class="text-muted mt-2 d-block" style="font-size: 0.76rem;">
+                            Step 1/3: Extracting feature matrix &rarr; Step 2/3: Fitting estimators &rarr; Step 3/3: Evaluating out-of-time test holdout
+                        </small>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-secondary" onclick="switchStage(1)">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Stage 1
+                        </button>
+                        <div class="d-flex gap-2">
+                            {% if active_model %}
+                            <button type="button" class="btn btn-outline-info" onclick="switchStage(3)">
+                                <i class="bi bi-bar-chart me-1"></i> View Stage 3 Metrics
+                            </button>
+                            {% endif %}
+                            <button type="submit" id="trainSubmitBtn" class="btn btn-primary-blue px-4 py-2 fs-6">
+                                <i class="bi bi-play-circle-fill me-2"></i> Launch Model Training Pipeline
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card card-custom p-3 border-start border-4 border-info">
-                <span class="text-muted small fw-semibold text-uppercase">Root Mean Squared Error</span>
-                <h3 class="fw-bold text-navy mt-1 mb-0">{{ active_model.rmse|default:"3.64" }}</h3>
-                <small class="text-muted">Standard deviation of residuals</small>
-            </div>
-        </div>
+            <!-- ============================================================== -->
+            <!-- STAGE 3: Validation & Genuine Evaluation Metrics -->
+            <!-- ============================================================== -->
+            <div id="stage-panel-3" class="wizard-panel">
+                {% if active_model and latest_eval %}
+                <!-- Active Model Information Header -->
+                <div class="p-3 bg-light rounded-3 border mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span class="badge bg-success-subtle text-success me-2"><i class="bi bi-check-circle me-1"></i>Model Deployed &amp; Verified</span>
+                        <strong class="text-navy fs-6">{{ active_model.name }}</strong>
+                        <span class="badge bg-light text-muted border ms-1">{{ active_model.version }}</span>
+                        <div class="small text-muted mt-1">
+                            Algorithm: <strong>{{ active_model.get_algorithm_display }}</strong> • 
+                            Source: <strong>{% if active_model.dataset %}{{ active_model.dataset.original_filename }}{% else %}All Combined Historical Records{% endif %}</strong> • 
+                            Trained: <strong>{{ active_model.trained_at|date:"M d, Y H:i" }}</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="switchStage(2)">
+                            <i class="bi bi-arrow-repeat me-1"></i> Retrain Model
+                        </button>
+                        <a href="{% url 'prediction:prediction' %}?model_id={{ active_model.id }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-graph-up-arrow me-1"></i> Proceed to Crime Prediction &rarr;
+                        </a>
+                    </div>
+                </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card card-custom p-3 border-start border-4 border-warning">
-                <span class="text-muted small fw-semibold text-uppercase">Baseline Lift</span>
-                <h3 class="fw-bold text-warning mt-1 mb-0">+34.8%</h3>
-                <small class="text-muted">vs Dummy Mean predictor</small>
+                <!-- 4 Genuine Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card card-custom p-3 border-start border-4 border-success h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">R² Determination Score</span>
+                            <h3 class="fw-bold text-success mt-1 mb-0">{{ latest_eval.r2_score|floatformat:3 }}</h3>
+                            <small class="text-success"><i class="bi bi-shield-check me-1"></i>Real Holdout Test Evaluation</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card card-custom p-3 border-start border-4 border-primary h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Mean Absolute Error (MAE)</span>
+                            <h3 class="fw-bold text-navy mt-1 mb-0">{{ latest_eval.mae|floatformat:2 }}</h3>
+                            <small class="text-muted">Avg count error per bucket</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card card-custom p-3 border-start border-4 border-info h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Root Mean Squared Error</span>
+                            <h3 class="fw-bold text-navy mt-1 mb-0">{{ latest_eval.rmse|floatformat:2 }}</h3>
+                            <small class="text-muted">Standard deviation of residuals</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card card-custom p-3 border-start border-4 border-warning h-100">
+                            <span class="text-muted small fw-semibold text-uppercase">Evaluation Samples</span>
+                            <h3 class="fw-bold text-warning mt-1 mb-0">{{ latest_eval.test_samples }}</h3>
+                            <small class="text-muted">{{ latest_eval.training_samples }} chronological training samples</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actual vs Predicted Interactive Chart Card -->
+                <div class="card card-custom mb-4">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h6 class="card-title-custom mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Actual Incident Counts vs. Model Predictions (Test Holdout)</h6>
+                        <span class="badge bg-light text-dark border">Ground Truth vs Estimator</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="actualVsPredictedChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-outline-secondary" onclick="switchStage(2)">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Stage 2: Configuration
+                    </button>
+                    <a href="{% url 'prediction:prediction' %}?model_id={{ active_model.id }}" class="btn btn-primary-blue px-4">
+                        Proceed to Crime Prediction Forecast <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                {% else %}
+                <!-- Empty State for Stage 3 -->
+                <div class="text-center py-5">
+                    <div class="p-4 bg-light rounded-3 d-inline-block mb-3">
+                        <i class="bi bi-cpu fs-1 text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold text-navy">No Model Trained Yet</h5>
+                    <p class="text-muted small mb-4" style="max-width: 480px; margin: 0 auto;">
+                        Stage 3 metrics and actual-versus-predicted charts are generated dynamically when a machine learning pipeline runs. Please launch training from Stage 2.
+                    </p>
+                    <button type="button" class="btn btn-primary-blue" onclick="switchStage(2)">
+                        Go to Stage 2: Model Training &rarr;
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <!-- Model Training History Table -->
     <div class="card card-custom">
-        <div class="card-header-custom">
-            <h5 class="card-title-custom">Model Training History &amp; Versions</h5>
-            <span class="badge bg-light text-dark border">Version Repository</span>
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title-custom mb-0">Model Training History &amp; Version Registry</h5>
+                <small class="text-muted">Saved scikit-learn model artifacts in local repository</small>
+            </div>
+            <span class="badge bg-light text-dark border">{{ models_history|length }} Models Registered</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -213,6 +463,7 @@
                         <tr>
                             <th class="ps-4">Model Name</th>
                             <th>Algorithm</th>
+                            <th>Dataset Source</th>
                             <th>R² Score</th>
                             <th>MAE</th>
                             <th>Status</th>
@@ -221,47 +472,46 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if models %}
-                            {% for m in models %}
+                        {% if models_history %}
+                            {% for m in models_history %}
                             <tr>
-                                <td class="ps-4 fw-bold text-navy">{{ m.name }}</td>
-                                <td>{{ m.algorithm }}</td>
-                                <td class="fw-bold text-success">{{ m.r2_score }}</td>
-                                <td>{{ m.mae }}</td>
-                                <td><span class="badge bg-success-subtle text-success">Deployed</span></td>
-                                <td class="text-muted">{{ m.created_at|date:"M d, Y" }}</td>
+                                <td class="ps-4 fw-bold text-navy">
+                                    <i class="bi bi-cpu text-primary me-2"></i>{{ m.name }}
+                                    <span class="badge bg-light text-muted ms-1">{{ m.version }}</span>
+                                </td>
+                                <td>{{ m.get_algorithm_display }}</td>
+                                <td>
+                                    {% if m.dataset %}
+                                        <span class="badge bg-info-subtle text-info border">{{ m.dataset.original_filename }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary border">All Historical Data</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold {% if m.evaluations.first.r2_score >= 0.7 %}text-success{% else %}text-primary{% endif %}">
+                                    {{ m.evaluations.first.r2_score|floatformat:3|default:"--" }}
+                                </td>
+                                <td>{{ m.evaluations.first.mae|floatformat:2|default:"--" }}</td>
+                                <td><span class="badge bg-success-subtle text-success">Deployed &amp; Ready</span></td>
+                                <td class="text-muted">{{ m.created_at|date:"M d, Y H:i" }}</td>
                                 <td class="pe-4 text-end">
-                                    <a href="/prediction/?model_id={{ m.id }}" class="btn btn-sm btn-outline-primary py-0">Use For Forecast</a>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'model_training:train' %}?stage=3&model_id={{ m.id }}" class="btn btn-outline-secondary py-0">
+                                            Metrics
+                                        </a>
+                                        <a href="{% url 'prediction:prediction' %}?model_id={{ m.id }}" class="btn btn-primary py-0">
+                                            Forecast
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>RandomForest_v2.4_Prod</td>
-                                <td>Random Forest Regressor</td>
-                                <td class="fw-bold text-success">0.912</td>
-                                <td>2.48</td>
-                                <td><span class="badge bg-success-subtle text-success">Active In Production</span></td>
-                                <td class="text-muted">Oct 11, 2024</td>
-                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>GradientBoost_v1.8</td>
-                                <td>Gradient Boosting (GBR)</td>
-                                <td class="fw-bold text-success">0.894</td>
-                                <td>2.82</td>
-                                <td><span class="badge bg-light text-dark border">Archived</span></td>
-                                <td class="text-muted">Oct 04, 2024</td>
-                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4 fw-bold text-navy"><i class="bi bi-cpu text-primary me-2"></i>LinearReg_Baseline</td>
-                                <td>Linear Regression</td>
-                                <td class="fw-bold text-warning">0.718</td>
-                                <td>4.95</td>
-                                <td><span class="badge bg-light text-dark border">Baseline</span></td>
-                                <td class="text-muted">Sep 28, 2024</td>
-                                <td class="pe-4 text-end"><a href="/prediction/" class="btn btn-sm btn-outline-primary py-0">Predict</a></td>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-cpu fs-1 d-block mb-2 opacity-50"></i>
+                                    <p class="mb-1 fw-semibold">No machine learning models trained yet</p>
+                                    <small>Select a dataset and algorithm above and click "Launch Model Training Pipeline" to train your first model.</small>
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -270,4 +520,168 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let actualVsPredictedChartInstance = null;
+    const chartData = {{ eval_chart_data_json|safe }};
+
+    function switchStage(stageNum) {
+        // Hide all stage panels
+        document.querySelectorAll('.wizard-panel').forEach(p => p.classList.remove('active'));
+
+        // Show target stage panel
+        const targetPanel = document.getElementById(`stage-panel-${stageNum}`);
+        if (targetPanel) {
+            targetPanel.classList.add('active');
+        }
+
+        // Update stepper dot classes
+        for (let i = 1; i <= 3; i++) {
+            const dot = document.getElementById(`dot-${i}`);
+            const label = document.getElementById(`label-${i}`);
+            if (!dot) continue;
+
+            dot.classList.remove('active', 'completed');
+            if (i < stageNum) {
+                dot.classList.add('completed');
+                dot.innerHTML = '<i class="bi bi-check-lg"></i>';
+                if (label) {
+                    label.classList.remove('text-primary', 'text-muted');
+                    label.classList.add('text-success');
+                }
+            } else if (i === stageNum) {
+                dot.classList.add('active');
+                dot.innerHTML = i;
+                if (label) {
+                    label.classList.remove('text-success', 'text-muted');
+                    label.classList.add('text-primary');
+                }
+            } else {
+                dot.innerHTML = i;
+                if (label) {
+                    label.classList.remove('text-success', 'text-primary');
+                    label.classList.add('text-secondary');
+                }
+            }
+        }
+
+        // Render actual vs predicted chart when navigating to stage 3
+        if (stageNum === 3) {
+            renderActualVsPredictedChart();
+        }
+
+        // Update URL state without page reload
+        const url = new URL(window.location);
+        url.searchParams.set('stage', stageNum);
+        window.history.replaceState({}, '', url);
+    }
+
+    function selectDatasetAndProceed(dsId) {
+        const selectEl = document.getElementById('datasetSelectInput');
+        if (selectEl) {
+            selectEl.value = dsId;
+        }
+        switchStage(2);
+    }
+
+    function renderActualVsPredictedChart() {
+        const canvas = document.getElementById('actualVsPredictedChart');
+        if (!canvas || !chartData || !chartData.labels || chartData.labels.length === 0) return;
+
+        if (actualVsPredictedChartInstance) {
+            actualVsPredictedChartInstance.destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        actualVsPredictedChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Actual Crime Incidents',
+                        data: chartData.actual,
+                        borderColor: '#071B3A',
+                        backgroundColor: 'rgba(7, 27, 58, 0.08)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#071B3A',
+                        pointRadius: 4,
+                        tension: 0.25,
+                        fill: false,
+                    },
+                    {
+                        label: 'Model Predicted Incidents',
+                        data: chartData.predicted,
+                        borderColor: '#1769FF',
+                        backgroundColor: 'rgba(23, 105, 255, 0.12)',
+                        borderWidth: 2.5,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: '#1769FF',
+                        pointRadius: 4,
+                        tension: 0.25,
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12, weight: 600 },
+                            usePointStyle: true,
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#071B3A',
+                        titleFont: { family: "'Inter', sans-serif", size: 12 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#E2E8F0' },
+                        ticks: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initial stage based on context or URL param
+        const initialStage = parseInt('{{ current_stage|default:"2" }}', 10) || 2;
+        switchStage(initialStage);
+
+        // Form submission loading indicator
+        const form = document.getElementById('trainingForm');
+        const submitBtn = document.getElementById('trainSubmitBtn');
+        const progressBox = document.getElementById('trainingProgressBox');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Executing ML Pipeline...';
+                if (progressBox) {
+                    progressBox.style.display = 'block';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

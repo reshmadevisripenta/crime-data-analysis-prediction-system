@@ -115,7 +115,8 @@ class TestRegisterView(TestCase):
             'password2': 'StrongPass123!'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'username', 'This username is already taken.')
+        form = response.context['form']
+        self.assertFormError(form, 'username', 'This username is already taken.')
 
     def test_duplicate_email_fails(self):
         response = self.client.post(reverse('accounts:register'), {
@@ -126,7 +127,8 @@ class TestRegisterView(TestCase):
             'password2': 'StrongPass123!'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'email', 'A user with this email address already exists.')
+        form = response.context['form']
+        self.assertFormError(form, 'email', 'A user with this email address already exists.')
 
     def test_password_mismatch_fails(self):
         response = self.client.post(reverse('accounts:register'), {
@@ -137,7 +139,8 @@ class TestRegisterView(TestCase):
             'password2': 'Password456!'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'password2', 'Passwords do not match.')
+        form = response.context['form']
+        self.assertFormError(form, 'password2', 'Passwords do not match.')
 
     def test_registration_with_first_and_last_name(self):
         response = self.client.post(reverse('accounts:register'), {

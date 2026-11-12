@@ -1,0 +1,51 @@
+record_id,crime_date,offense_category,city_location,severity
+CR-0001,2024-01-03,Burglary,Rajahmundry,High
+CR-0002,2024-01-07,Vehicle Theft,Vijayawada,Medium
+CR-0003,2024-01-12,Assault,Guntur,High
+CR-0004,2024-01-18,Theft,Kakinada,Low
+CR-0005,2024-01-24,Robbery,Rajahmundry,Critical
+CR-0006,2024-02-02,Vehicle Theft,Vijayawada,Medium
+CR-0007,2024-02-06,Burglary,Eluru,High
+CR-0008,2024-02-11,Fraud,Visakhapatnam,Low
+CR-0009,2024-02-17,Assault,Guntur,High
+CR-0010,2024-02-23,Theft,Kakinada,Low
+CR-0011,2024-03-01,Robbery,Rajahmundry,Critical
+CR-0012,2024-03-05,Burglary,Vijayawada,High
+CR-0013,2024-03-10,Vehicle Theft,Eluru,Medium
+CR-0014,2024-03-16,Assault,Visakhapatnam,High
+CR-0015,2024-03-22,Fraud,Guntur,Low
+CR-0016,2024-04-04,Theft,Rajahmundry,Low
+CR-0017,2024-04-09,Burglary,Vijayawada,High
+CR-0018,2024-04-14,Robbery,Kakinada,Critical
+CR-0019,2024-04-20,Vehicle Theft,Visakhapatnam,Medium
+CR-0020,2024-04-27,Assault,Eluru,High
+CR-0021,2024-05-02,Fraud,Rajahmundry,Low
+CR-0022,2024-05-08,Theft,Guntur,Low
+CR-0023,2024-05-13,Burglary,Visakhapatnam,High
+CR-0024,2024-05-19,Robbery,Vijayawada,Critical
+CR-0025,2024-05-26,Vehicle Theft,Kakinada,Medium
+CR-0026,2024-06-03,Assault,Rajahmundry,High
+CR-0027,2024-06-09,Theft,Eluru,Low
+CR-0028,2024-06-15,Burglary,Guntur,High
+CR-0029,2024-06-21,Fraud,Vijayawada,Low
+CR-0030,2024-06-28,Robbery,Visakhapatnam,Critical
+CR-0031,2024-07-02,Vehicle Theft,Rajahmundry,Medium
+CR-0032,2024-07-08,Assault,Vijayawada,High
+CR-0033,2024-07-14,Theft,Kakinada,Low
+CR-0034,2024-07-20,Burglary,Eluru,High
+CR-0035,2024-07-26,Fraud,Visakhapatnam,Low
+CR-0036,2024-08-01,Robbery,Guntur,Critical
+CR-0037,2024-08-07,Vehicle Theft,Vijayawada,Medium
+CR-0038,2024-08-13,Assault,Rajahmundry,High
+CR-0039,2024-08-19,Burglary,Kakinada,High
+CR-0040,2024-08-25,Theft,Visakhapatnam,Low
+CR-0041,2024-09-03,Fraud,Eluru,Low
+CR-0042,2024-09-09,Robbery,Rajahmundry,Critical
+CR-0043,2024-09-15,Vehicle Theft,Guntur,Medium
+CR-0044,2024-09-21,Assault,Kakinada,High
+CR-0045,2024-09-27,Burglary,Vijayawada,High
+CR-0046,2024-10-04,Theft,Rajahmundry,Low
+CR-0047,2024-10-10,Robbery,Visakhapatnam,Critical
+CR-0048,2024-10-16,Vehicle Theft,Eluru,Medium
+CR-0049,2024-10-22,Assault,Guntur,High
+CR-0050,2024-10-28,Burglary,Kakinada,High

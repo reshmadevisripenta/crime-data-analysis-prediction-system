@@ -16,60 +16,60 @@
                     </div>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="/reports/generate/" id="reportGenForm">
+                    <form method="POST" action="{% url 'reports:generate_report' %}" id="reportGenForm">
                         {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Report Title (Optional)</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Q4 Executive Intelligence Briefing">
+                        </div>
 
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-secondary">Report Template Type *</label>
                             <select name="report_type" class="form-select" required>
-                                <option value="executive_summary" selected>Executive Command Briefing (PDF)</option>
-                                <option value="hotspot_analysis">Hotspot &amp; Geospatial Risk Audit (PDF)</option>
-                                <option value="prediction_forecast">Predictive ML Forecast Projection (PDF)</option>
-                                <option value="tabular_export">Complete Tabular Incident Export (CSV / Excel)</option>
+                                {% for code, label in report_types %}
+                                    <option value="{{ code }}" {% if forloop.first %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-secondary">Target Jurisdiction</label>
-                            <select name="location" class="form-select">
-                                <option value="all" selected>All Metro Jurisdictions</option>
-                                <option value="1">Central Ward</option>
-                                <option value="2">North Industrial District</option>
-                                <option value="3">South Transit Corridor</option>
+                            <select name="location_id" class="form-select">
+                                <option value="">All Metro Jurisdictions (Consolidated)</option>
+                                {% for loc in locations %}
+                                    <option value="{{ loc.id }}" {% if selected_location == loc.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ loc.name }}{% if loc.city %} — {{ loc.city }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Offense Category</label>
+                            <select name="category_id" class="form-select">
+                                <option value="">All Crime Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
 
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <label class="form-label small fw-semibold text-secondary">Start Date</label>
-                                <input type="date" name="date_from" class="form-control" value="2024-01-01">
+                                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small fw-semibold text-secondary">End Date</label>
-                                <input type="date" name="date_to" class="form-control" value="2024-10-12">
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label small fw-semibold text-secondary d-block mb-2">Export Format</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="format" id="fmtPdf" value="pdf" checked>
-                                    <label class="form-check-label small fw-semibold" for="fmtPdf">
-                                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF Document
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="format" id="fmtCsv" value="csv">
-                                    <label class="form-check-label small fw-semibold" for="fmtCsv">
-                                        <i class="bi bi-file-earmark-spreadsheet text-success me-1"></i> CSV Spreadsheet
-                                    </label>
-                                </div>
+                                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
                             </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary-blue w-100 py-2 fs-6">
-                            <i class="bi bi-gear-wide-connected me-1"></i> Compile &amp; Download Report
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Compile &amp; Build Intelligence Report
                         </button>
                     </form>
                 </div>
@@ -79,11 +79,12 @@
         <!-- Generated Reports Archive Table -->
         <div class="col-lg-7">
             <div class="card card-custom h-100">
-                <div class="card-header-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title-custom">Compiled Report Archives</h5>
-                        <small class="text-muted">Recent analyst exports</small>
+                        <h5 class="card-title-custom mb-0">Compiled Report Archives</h5>
+                        <small class="text-muted">Verified analytical exports</small>
                     </div>
+                    <span class="badge bg-light text-dark border">Report Repository</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -92,50 +93,52 @@
                                 <tr>
                                     <th class="ps-4">Report Title</th>
                                     <th>Classification</th>
-                                    <th>Format</th>
+                                    <th>Status</th>
                                     <th>Compiled Date</th>
-                                    <th class="pe-4 text-end">Action</th>
+                                    <th class="pe-4 text-end">Downloads</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if reports %}
-                                    {% for rep in reports %}
+                                {% if reports_history %}
+                                    {% for rep in reports_history %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold">{{ rep.title }}</td>
-                                        <td>{{ rep.report_type|title }}</td>
-                                        <td><span class="badge bg-light text-dark border">{{ rep.format|upper }}</span></td>
-                                        <td class="text-muted">{{ rep.created_at|date:"M d, Y" }}</td>
+                                        <td class="ps-4 fw-semibold text-navy">{{ rep.name }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ rep.get_report_type_display }}</span></td>
+                                        <td>
+                                            {% if rep.status == 'ready' %}
+                                                <span class="badge bg-success-subtle text-success">Ready</span>
+                                            {% elif rep.status == 'generating' %}
+                                                <span class="badge bg-warning-subtle text-warning">Generating</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-subtle text-danger">Failed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ rep.created_at|date:"M d, Y H:i" }}</td>
                                         <td class="pe-4 text-end">
-                                            <a href="/reports/{{ rep.id }}/download/" class="btn btn-sm btn-outline-primary py-0">Download</a>
+                                            <div class="btn-group btn-group-sm">
+                                                {% for exp in rep.exports.all %}
+                                                    {% if exp.export_format == 'pdf' %}
+                                                        <a href="{% url 'reports:download_report' exp.id %}" class="btn btn-outline-danger" title="Download PDF">
+                                                            <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                                                        </a>
+                                                    {% elif exp.export_format == 'csv' %}
+                                                        <a href="{% url 'reports:download_report' exp.id %}" class="btn btn-outline-success" title="Download CSV">
+                                                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV
+                                                        </a>
+                                                    {% endif %}
+                                                {% empty %}
+                                                    <span class="text-muted small">No exports</span>
+                                                {% endfor %}
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Q3_Crime_Trend_Briefing.pdf</td>
-                                        <td>Executive Summary</td>
-                                        <td><span class="badge bg-danger-subtle text-danger">PDF</span></td>
-                                        <td class="text-muted">Oct 11, 2024</td>
-                                        <td class="pe-4 text-end">
-                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>Metro_Central_Audit_2024.csv</td>
-                                        <td>Tabular Dataset</td>
-                                        <td><span class="badge bg-success-subtle text-success">CSV</span></td>
-                                        <td class="text-muted">Oct 08, 2024</td>
-                                        <td class="pe-4 text-end">
-                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4 fw-semibold"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Predictive_30Day_Outlook.pdf</td>
-                                        <td>Prediction Forecast</td>
-                                        <td><span class="badge bg-danger-subtle text-danger">PDF</span></td>
-                                        <td class="text-muted">Oct 02, 2024</td>
-                                        <td class="pe-4 text-end">
-                                            <a href="#" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-download"></i></a>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <i class="bi bi-file-earmark-text fs-1 d-block mb-2 opacity-50"></i>
+                                            <p class="mb-1 fw-semibold">No reports generated yet</p>
+                                            <small>Configure the parameters on the left to compile your first executive report.</small>
                                         </td>
                                     </tr>
                                 {% endif %}

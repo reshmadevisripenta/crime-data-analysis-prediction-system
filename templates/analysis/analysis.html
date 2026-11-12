@@ -6,37 +6,130 @@
 {% block content %}
 <div class="container-fluid p-0">
 
+    <!-- Pipeline Workflow Navigation Bar -->
+    <div class="card card-custom mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #071B3A 0%, #102B52 100%);">
+        <div class="card-body p-3 text-white">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary px-2 py-1"><i class="bi bi-diagram-3 me-1"></i>END-TO-END PIPELINE</span>
+                    <span class="small fw-semibold text-light">Operational Intelligence Workflow</span>
+                </div>
+                <div class="small text-white-50">
+                    <i class="bi bi-shield-check text-success me-1"></i>Connected Modules: 8/8 Active
+                </div>
+            </div>
+
+            <!-- Workflow Buttons Group -->
+            <div class="d-flex flex-wrap gap-2 pt-1">
+                <a href="{% url 'crime_data:record_list' %}{% if selected_location or selected_category %}?location={{ selected_location }}&category={{ selected_category }}{% endif %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-database"></i> View Crime Data
+                </a>
+                <a href="{% url 'analysis:analysis' %}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-repeat"></i> Run / Refresh Analysis
+                </a>
+                <a href="{% url 'location_analysis:map' %}{% if selected_location or selected_category %}?location={{ selected_location }}&category={{ selected_category }}{% endif %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-geo-alt"></i> Location Analysis
+                </a>
+                <a href="{% url 'patterns:patterns' %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-pie-chart"></i> Crime Patterns
+                </a>
+                <a href="{% url 'ontology:ontology' %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-share"></i> Build Ontology
+                </a>
+                <a href="{% url 'model_training:train' %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-cpu"></i> Train Model
+                </a>
+                <a href="{% url 'prediction:prediction' %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-graph-up-arrow"></i> Predict Crime Trends
+                </a>
+                <a href="{% url 'reports:reports' %}{% if selected_location or selected_category %}?location={{ selected_location }}&category={{ selected_category }}{% endif %}" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <i class="bi bi-file-earmark-text"></i> Generate Report
+                </a>
+            </div>
+
+            <!-- Dynamic Model Training Status & Prediction Guidance Alert -->
+            {% if trained_models_count == 0 %}
+                <div class="alert alert-warning border-0 d-flex align-items-center justify-content-between p-2 mt-3 mb-0 small rounded-2 text-dark" style="background-color: #FEF3C7;">
+                    <div>
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2 fs-6"></i>
+                        <strong>Model Training Required:</strong> No trained ML models currently active. Train a model before running crime trend forecasting.
+                    </div>
+                    <a href="{% url 'model_training:train' %}" class="btn btn-sm btn-warning text-dark fw-bold text-nowrap ms-2">
+                        <i class="bi bi-cpu me-1"></i>Train Model
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-success border-0 d-flex align-items-center justify-content-between p-2 mt-3 mb-0 small rounded-2 text-dark" style="background-color: #D1FAE5;">
+                    <div>
+                        <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                        <strong>Pipeline Ready:</strong> {{ trained_models_count }} machine learning model{{ trained_models_count|pluralize }} trained and active for predictions.
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'prediction:prediction' %}" class="btn btn-sm btn-outline-success text-dark text-nowrap">
+                            <i class="bi bi-graph-up-arrow me-1"></i>Predict
+                        </a>
+                        <a href="{% url 'reports:reports' %}" class="btn btn-sm btn-success text-white text-nowrap">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i>Generate Report
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Filter Bar Card -->
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
             <form id="analysisFilterForm" method="GET" action="{% url 'analysis:analysis' %}" class="row g-2 align-items-center">
-                <div class="col-md-4">
-                    <label class="form-label small fw-bold text-muted mb-1">Jurisdiction / Region</label>
+                <!-- Location Filter -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted mb-1">Jurisdiction / Location</label>
                     <select name="location" id="filterLocation" class="form-select form-select-sm">
                         <option value="">All Jurisdictions</option>
                         {% for loc in locations %}
-                        <option value="{{ loc.id }}" {% if request.GET.location == loc.id|stringformat:"s" %}selected{% endif %}>
+                        <option value="{{ loc.id }}" {% if selected_location == loc.id|stringformat:"s" %}selected{% endif %}>
                             {{ loc.name }}{% if loc.city %} — {{ loc.city }}{% endif %}
                         </option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="col-md-4">
+                <!-- Category Filter -->
+                <div class="col-md-3">
                     <label class="form-label small fw-bold text-muted mb-1">Offense Classification</label>
                     <select name="category" id="filterCategory" class="form-select form-select-sm">
                         <option value="">All Crime Categories</option>
                         {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                        <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
                             {{ cat.name }}
                         </option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="col-md-4 d-flex align-items-end gap-2">
-                    <button type="button" id="applyFilterBtn" class="btn btn-sm btn-primary w-100">
-                        <i class="bi bi-arrow-repeat me-1"></i> Update Analytical Matrices
+                <!-- Severity Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted mb-1">Severity Level</label>
+                    <select name="severity" id="filterSeverity" class="form-select form-select-sm">
+                        <option value="">All Severities</option>
+                        {% for s_val, s_lbl in severities %}
+                        <option value="{{ s_val }}" {% if selected_severity == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date Range -->
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted mb-1">Date Range</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" name="date_from" id="filterDateFrom" class="form-control" value="{{ selected_date_from }}" title="From Date">
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="applyFilterBtn" class="btn btn-sm btn-primary-blue w-100">
+                        <i class="bi bi-arrow-repeat me-1"></i> Update Analytical Metrics
                     </button>
                 </div>
             </form>
@@ -48,8 +141,8 @@
         <div class="col-sm-6 col-xl-3">
             <div class="card card-custom p-3">
                 <span class="text-muted small fw-semibold text-uppercase">Total Records Analysed</span>
-                <h3 class="fw-bold text-navy mt-1 mb-0" id="statTotalRecords">{{ total_records|default:"—" }}</h3>
-                <small class="text-muted">Across all filters</small>
+                <h3 class="fw-bold text-navy mt-1 mb-0" id="statTotalRecords">{{ total_records|default:"0" }}</h3>
+                <small class="text-muted">Live database records</small>
             </div>
         </div>
 
@@ -65,7 +158,7 @@
             <div class="card card-custom p-3">
                 <span class="text-muted small fw-semibold text-uppercase">Jurisdictions Covered</span>
                 <h3 class="fw-bold text-primary mt-1 mb-0">{{ locations.count }}</h3>
-                <small class="text-muted">Locations in database</small>
+                <small class="text-muted">Locations &amp; cities in database</small>
             </div>
         </div>
 
@@ -73,7 +166,7 @@
             <div class="card card-custom p-3">
                 <span class="text-muted small fw-semibold text-uppercase">Past Analyses Run</span>
                 <h3 class="fw-bold text-success mt-1 mb-0">{{ past_analyses.count }}</h3>
-                <small class="text-success"><i class="bi bi-shield-check"></i> By you</small>
+                <small class="text-success"><i class="bi bi-shield-check"></i> System tracked</small>
             </div>
         </div>
     </div>
@@ -85,7 +178,7 @@
                 <div class="card-header-custom">
                     <div>
                         <h5 class="card-title-custom">Crime Frequency by Offense Category</h5>
-                        <small class="text-muted">Aggregated counts across selected filters</small>
+                        <small class="text-muted">Aggregated counts across selected database filters</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -101,7 +194,7 @@
                 <div class="card-header-custom">
                     <div>
                         <h5 class="card-title-custom">Monthly Temporal Incidents Trend</h5>
-                        <small class="text-muted">Sequential cyclical patterns over the last 12 months</small>
+                        <small class="text-muted">Sequential cyclical patterns over 12 months</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -113,14 +206,49 @@
         </div>
     </div>
 
-    <!-- Charts Row 2: Yearly Trends + Area trend -->
+    <!-- Charts Row 2: Location-wise Crime Counts + Severity Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Location-Wise Crime Distribution</h5>
+                        <small class="text-muted">Top jurisdictions and neighborhoods ranked by crime volume</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="locationBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card card-custom h-100">
+                <div class="card-header-custom">
+                    <div>
+                        <h5 class="card-title-custom">Incident Severity Profile</h5>
+                        <small class="text-muted">Critical, High, Medium, and Low severity breakdown</small>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div style="height: 300px;">
+                        <canvas id="severityDonutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3: Yearly Trends + Area trend -->
     <div class="row g-4 mb-4">
         <div class="col-lg-6">
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
                     <div>
                         <h5 class="card-title-custom">Yearly Crime Volume Comparison</h5>
-                        <small class="text-muted">Year-over-year baseline shifts</small>
+                        <small class="text-muted">Year-over-year dataset shifts</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -190,11 +318,13 @@
     const categoryFreqData = {{ category_freq_json|safe }};
     const monthlyTrendsData = {{ monthly_trends_json|safe }};
     const yearlyTrendsData  = {{ yearly_trends_json|safe }};
+    const locationCountsData = {{ location_counts_json|safe }};
+    const severityStatsData  = {{ severity_stats_json|safe }};
 
     // ── Colour palette ─────────────────────────────────────────────────
-    const PALETTE = ['#1769FF','#20D5F5','#16A36A','#F59E0B','#EF4444','#9966FF','#FF6384','#36A2EB','#4BC0C0'];
+    const PALETTE = ['#1769FF','#20D5F5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#3B82F6','#14B8A6'];
 
-    let catChart, monthlyChart, yearlyChart, areaChartObj;
+    let catChart, monthlyChart, yearlyChart, areaChartObj, locChart, sevChart;
 
     function buildCategoryChart(freqObj) {
         const labels = Object.keys(freqObj);
@@ -204,8 +334,8 @@
         catChart = new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
-                labels,
-                datasets: [{ label: 'Recorded Incidents', data, backgroundColor: colors, borderRadius: 6 }]
+                labels: labels.length ? labels : ['No Data'],
+                datasets: [{ label: 'Recorded Incidents', data: data.length ? data : [0], backgroundColor: colors, borderRadius: 6 }]
             },
             options: {
                 responsive: true,
@@ -221,10 +351,10 @@
         monthlyChart = new Chart(document.getElementById('monthlyTrendChart'), {
             type: 'line',
             data: {
-                labels: trendsObj.labels,
+                labels: trendsObj.labels && trendsObj.labels.length ? trendsObj.labels : ['No Data'],
                 datasets: [{
                     label: 'Monthly Volume',
-                    data: trendsObj.data,
+                    data: trendsObj.data && trendsObj.data.length ? trendsObj.data : [0],
                     borderColor: '#20D5F5',
                     backgroundColor: 'rgba(32,213,245,0.12)',
                     fill: true, tension: 0.35,
@@ -239,14 +369,61 @@
         });
     }
 
+    function buildLocationChart(locObj) {
+        const labels = Object.keys(locObj);
+        const data = Object.values(locObj);
+        const colors = labels.map((_, i) => PALETTE[(i + 2) % PALETTE.length]);
+        if (locChart) locChart.destroy();
+        locChart = new Chart(document.getElementById('locationBarChart'), {
+            type: 'bar',
+            data: {
+                labels: labels.length ? labels : ['No Data'],
+                datasets: [{ label: 'Incidents Reported', data: data.length ? data : [0], backgroundColor: colors, borderRadius: 6 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, grid: { color: '#F1F5F9' } } }
+            }
+        });
+    }
+
+    function buildSeverityChart(sevObj) {
+        const labels = ['Critical', 'High', 'Medium', 'Low'];
+        const data = labels.map(l => sevObj[l] || 0);
+        const colors = ['#EF4444', '#F59E0B', '#1769FF', '#10B981'];
+        if (sevChart) sevChart.destroy();
+        sevChart = new Chart(document.getElementById('severityDonutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
     function buildYearlyChart(trendsObj) {
         const colors = trendsObj.labels.map((_, i) => PALETTE[i % PALETTE.length]);
         if (yearlyChart) yearlyChart.destroy();
         yearlyChart = new Chart(document.getElementById('yearlyTrendChart'), {
             type: 'bar',
             data: {
-                labels: trendsObj.labels,
-                datasets: [{ label: 'Total Incidents', data: trendsObj.data, backgroundColor: colors, borderRadius: 6 }]
+                labels: trendsObj.labels && trendsObj.labels.length ? trendsObj.labels : ['No Data'],
+                datasets: [{ label: 'Total Incidents', data: trendsObj.data && trendsObj.data.length ? trendsObj.data : [0], backgroundColor: colors, borderRadius: 6 }]
             },
             options: {
                 responsive: true,
@@ -262,10 +439,10 @@
         areaChartObj = new Chart(document.getElementById('areaChart'), {
             type: 'line',
             data: {
-                labels: trendsObj.labels,
+                labels: trendsObj.labels && trendsObj.labels.length ? trendsObj.labels : ['No Data'],
                 datasets: [{
                     label: 'Recorded Incidents',
-                    data: trendsObj.data,
+                    data: trendsObj.data && trendsObj.data.length ? trendsObj.data : [0],
                     borderColor: '#1769FF',
                     backgroundColor: 'rgba(23,105,255,0.10)',
                     fill: true, tension: 0.3, pointRadius: 4
@@ -283,6 +460,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         buildCategoryChart(categoryFreqData);
         buildMonthlyChart(monthlyTrendsData);
+        buildLocationChart(locationCountsData);
+        buildSeverityChart(severityStatsData);
         buildYearlyChart(yearlyTrendsData);
         buildAreaChart(monthlyTrendsData);
     });
@@ -291,10 +470,14 @@
     document.getElementById('applyFilterBtn').addEventListener('click', () => {
         const location = document.getElementById('filterLocation').value;
         const category = document.getElementById('filterCategory').value;
+        const severity = document.getElementById('filterSeverity').value;
+        const dateFrom = document.getElementById('filterDateFrom').value;
 
         const params = new URLSearchParams();
         if (location) params.append('location', location);
         if (category) params.append('category', category);
+        if (severity) params.append('severity', severity);
+        if (dateFrom) params.append('date_from', dateFrom);
 
         const btn = document.getElementById('applyFilterBtn');
         btn.disabled = true;
@@ -306,11 +489,13 @@
         .then(r => r.json())
         .then(json => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Update Analytical Matrices';
+            btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Update Analytical Metrics';
             if (json.status !== 'success') return;
 
             buildCategoryChart(json.category_freq);
             buildMonthlyChart(json.monthly_trends);
+            buildLocationChart(json.location_counts);
+            buildSeverityChart(json.severity_stats);
             buildYearlyChart(json.yearly_trends);
             buildAreaChart(json.monthly_trends);
 
@@ -340,7 +525,7 @@
         })
         .catch(err => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Update Analytical Matrices';
+            btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Update Analytical Metrics';
             console.error('Filter fetch error:', err);
         });
     });

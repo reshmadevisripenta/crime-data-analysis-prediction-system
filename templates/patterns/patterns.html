@@ -8,16 +8,16 @@
     <!-- Header Banner -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <p class="text-muted small mb-0">Discover recurring modus operandi, temporal cycles, and cross-district syndicates using unsupervised pattern mining.</p>
+            <p class="text-muted small mb-0">Discover recurring modus operandi, temporal cycles, and cross-district clusters derived directly from {{ total_count }} database incident records.</p>
         </div>
         <button class="btn btn-primary-blue btn-sm d-flex align-items-center gap-2" onclick="window.print()">
             <i class="bi bi-download"></i> Download Findings Report
         </button>
     </div>
 
-    <!-- Pattern Summary Cards (Row of 3) -->
+    <!-- Pattern Summary Cards (Row of 3 - Live DB Data) -->
     <div class="row g-4 mb-4">
-        <!-- Pattern Card 1 -->
+        <!-- Pattern Card 1: Temporal -->
         <div class="col-md-4">
             <div class="card card-custom h-100 p-4 border-start border-4 border-primary">
                 <div class="d-flex align-items-center gap-3 mb-3">
@@ -26,20 +26,20 @@
                     </div>
                     <div>
                         <span class="badge bg-primary-subtle text-primary small">Temporal Cycle</span>
-                        <h6 class="fw-bold text-navy mb-0 mt-1">Midnight Commercial Thefts</h6>
+                        <h6 class="fw-bold text-navy mb-0 mt-1">{{ temporal_card.title }}</h6>
                     </div>
                 </div>
                 <p class="text-muted small mb-3">
-                    Statistically significant clusters detected between 01:00 AM and 04:00 AM during Tuesday/Wednesday cycles targeting unmanned convenience stores.
+                    {{ temporal_card.desc }}
                 </p>
                 <div class="d-flex justify-content-between align-items-center text-muted small pt-2 border-top">
-                    <span>Recurrence: <strong>Every 7.2 Days</strong></span>
-                    <span class="text-danger fw-semibold">94% Confidence</span>
+                    <span>{{ temporal_card.metric_label }}: <strong>{{ temporal_card.metric_value }}</strong></span>
+                    <span class="text-primary fw-semibold">{{ temporal_card.confidence }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Pattern Card 2 -->
+        <!-- Pattern Card 2: Spatial -->
         <div class="col-md-4">
             <div class="card card-custom h-100 p-4 border-start border-4 border-warning">
                 <div class="d-flex align-items-center gap-3 mb-3">
@@ -47,21 +47,21 @@
                         <i class="bi bi-geo-fill"></i>
                     </div>
                     <div>
-                        <span class="badge bg-warning-subtle text-warning small">Spatial Drift</span>
-                        <h6 class="fw-bold text-navy mb-0 mt-1">Vehicle Theft Corridor Drift</h6>
+                        <span class="badge bg-warning-subtle text-warning small">Spatial Density</span>
+                        <h6 class="fw-bold text-navy mb-0 mt-1">{{ spatial_card.title }}</h6>
                     </div>
                 </div>
                 <p class="text-muted small mb-3">
-                    Motorcycle and sedan thefts migrating outward along the Northern Highway artery at an estimated velocity of 1.4 km per week away from CBD cameras.
+                    {{ spatial_card.desc }}
                 </p>
                 <div class="d-flex justify-content-between align-items-center text-muted small pt-2 border-top">
-                    <span>Corridor: <strong>Highway North</strong></span>
-                    <span class="text-warning fw-semibold">88% Confidence</span>
+                    <span>{{ spatial_card.metric_label }}: <strong>{{ spatial_card.metric_value }}</strong></span>
+                    <span class="text-warning fw-semibold">{{ spatial_card.confidence }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Pattern Card 3 -->
+        <!-- Pattern Card 3: Category -->
         <div class="col-md-4">
             <div class="card card-custom h-100 p-4 border-start border-4 border-success">
                 <div class="d-flex align-items-center gap-3 mb-3">
@@ -70,15 +70,15 @@
                     </div>
                     <div>
                         <span class="badge bg-success-subtle text-success small">Modus Operandi</span>
-                        <h6 class="fw-bold text-navy mb-0 mt-1">ATM Skimming &amp; Cyber Fraud</h6>
+                        <h6 class="fw-bold text-navy mb-0 mt-1">{{ category_card.title }}</h6>
                     </div>
                 </div>
                 <p class="text-muted small mb-3">
-                    Synchronized hardware skimming devices deployed simultaneously across 4 branch kiosks preceding mass unauthorized withdrawals during bank holidays.
+                    {{ category_card.desc }}
                 </p>
                 <div class="d-flex justify-content-between align-items-center text-muted small pt-2 border-top">
-                    <span>Offense Link: <strong>Cyber/Physical</strong></span>
-                    <span class="text-success fw-semibold">91% Confidence</span>
+                    <span>{{ category_card.metric_label }}: <strong>{{ category_card.metric_value }}</strong></span>
+                    <span class="text-success fw-semibold">{{ category_card.confidence }}</span>
                 </div>
             </div>
         </div>
@@ -109,8 +109,8 @@
             <div class="card card-custom h-100">
                 <div class="card-header-custom">
                     <div>
-                        <h5 class="card-title-custom">Severity vs Category Breakdown</h5>
-                        <small class="text-muted">Proportion of critical cases per category</small>
+                        <h5 class="card-title-custom">Category Trend Comparison</h5>
+                        <small class="text-muted">Proportion of cases across categories (Recent vs Prior Period)</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -126,7 +126,7 @@
     <div class="card card-custom">
         <div class="card-header-custom">
             <h5 class="card-title-custom"><i class="bi bi-check2-circle text-primary me-2"></i>Statistical Hypotheses &amp; Association Rules</h5>
-            <span class="badge bg-primary-subtle text-primary">Apriori Mining Algorithm</span>
+            <span class="badge bg-primary-subtle text-primary">Live Unsupervised Mining Engine</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -143,33 +143,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="ps-4 fw-mono fw-bold text-navy">#RULE-01</td>
-                            <td><code>{Weekend, Time: 23:00-03:00, AlcoholLicenseZone}</code></td>
-                            <td><strong>Aggravated Assault</strong></td>
-                            <td>0.142</td>
-                            <td><span class="badge bg-success-subtle text-success">86.4%</span></td>
-                            <td class="fw-bold">3.24x</td>
-                            <td class="pe-4 text-end"><span class="badge bg-danger">Critical</span></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-4 fw-mono fw-bold text-navy">#RULE-02</td>
-                            <td><code>{Rainfall > 25mm, TransitParkingZone}</code></td>
-                            <td><strong>Vehicle Break-in / Theft</strong></td>
-                            <td>0.089</td>
-                            <td><span class="badge bg-success-subtle text-success">79.1%</span></td>
-                            <td class="fw-bold">2.88x</td>
-                            <td class="pe-4 text-end"><span class="badge bg-warning-subtle text-warning">High</span></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-4 fw-mono fw-bold text-navy">#RULE-03</td>
-                            <td><code>{CommercialHoliday, UnmonitoredAlley}</code></td>
-                            <td><strong>Commercial Burglary</strong></td>
-                            <td>0.112</td>
-                            <td><span class="badge bg-success-subtle text-success">82.6%</span></td>
-                            <td class="fw-bold">2.51x</td>
-                            <td class="pe-4 text-end"><span class="badge bg-warning-subtle text-warning">High</span></td>
-                        </tr>
+                        {% if rules %}
+                            {% for r in rules %}
+                            <tr>
+                                <td class="ps-4 fw-mono fw-bold text-navy">{{ r.id }}</td>
+                                <td><code>{{ r.antecedent }}</code></td>
+                                <td><strong>{{ r.consequent }}</strong></td>
+                                <td>{{ r.support }}</td>
+                                <td><span class="badge bg-success-subtle text-success">{{ r.confidence }}</span></td>
+                                <td class="fw-bold">{{ r.lift }}</td>
+                                <td class="pe-4 text-end"><span class="badge bg-{% if r.significance == 'Critical' %}danger{% else %}warning-subtle text-warning{% endif %}">{{ r.significance }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    No statistical association rules identified for current filters.
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -248,13 +240,13 @@
                     labels: catData.labels && catData.labels.length ? catData.labels : ['No Categories'],
                     datasets: [
                         {
-                            label: 'Prior 6 Months',
+                            label: 'Prior Period',
                             data: catData.previous && catData.previous.length ? catData.previous : [0],
                             backgroundColor: '#94A3B8',
                             borderRadius: 4
                         },
                         {
-                            label: 'Recent 6 Months',
+                            label: 'Recent Period',
                             data: catData.current && catData.current.length ? catData.current : [0],
                             backgroundColor: '#1769FF',
                             borderRadius: 4

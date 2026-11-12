@@ -25,7 +25,7 @@
                             <label class="form-label small fw-semibold text-secondary">Trained Machine Learning Model *</label>
                             <select name="model_id" id="mlModelSelect" class="form-select" required>
                                 {% for m in models %}
-                                    <option value="{{ m.id }}" {% if forloop.first %}selected{% endif %}>
+                                    <option value="{{ m.id }}" {% if selected_model_id == m.id|stringformat:"s" or forloop.first and not selected_model_id %}selected{% endif %}>
                                         {{ m.name }} ({{ m.get_algorithm_display }})
                                     </option>
                                 {% empty %}

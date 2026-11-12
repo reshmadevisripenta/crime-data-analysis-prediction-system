@@ -111,42 +111,53 @@
         <div class="col-lg-4">
             <div class="card card-custom mb-4">
                 <div class="card-header-custom">
-                    <h5 class="card-title-custom"><i class="bi bi-card-checklist text-primary me-2"></i>Schema Checklist</h5>
+                    <h5 class="card-title-custom"><i class="bi bi-magic text-primary me-2"></i>Automatic Schema Detection</h5>
                 </div>
                 <div class="card-body p-4 small">
-                    <p class="text-muted">Ensure your uploaded table includes the required header fields below for correct ontology mapping:</p>
+                    <p class="text-muted">Upload your CSV or Excel dataset. Our intelligent ingestion engine automatically detects and maps column headers:</p>
                     
                     <ul class="list-group list-group-flush mb-3">
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <div><code>crime_category</code> <span class="text-muted" style="font-size:0.72rem">(or: category, crime_type, offense, primary_type)</span></div>
-                            <span class="badge bg-danger-subtle text-danger">Required</span>
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Crime Offense / Category</span>
+                                <span class="badge bg-danger-subtle text-danger">Required</span>
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem;">Recognizes: <em>Crime Type, Crime Description, Offense, Crime, Category, Crime Name</em></div>
                         </li>
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <div><code>location</code> <span class="text-muted" style="font-size:0.72rem">(or: area, city, neighborhood, block, address)</span></div>
-                            <span class="badge bg-danger-subtle text-danger">Required</span>
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Location / Area</span>
+                                <span class="badge bg-danger-subtle text-danger">Required</span>
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem;">Recognizes: <em>City, Location, Area, District, Neighborhood, Jurisdiction, Place</em></div>
                         </li>
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <div><code>incident_date</code> <span class="text-muted" style="font-size:0.72rem">(or: date, datetime, timestamp, occurred_date)</span></div>
-                            <span class="badge bg-danger-subtle text-danger">YYYY-MM-DD</span>
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Incident Date</span>
+                                <span class="badge bg-danger-subtle text-danger">Required</span>
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem;">Recognizes: <em>Date of Occurrence, Crime Date, Incident Date, Date, Occurrence Date</em> (Prefers Occurrence over Report Date)</div>
                         </li>
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>latitude, longitude</code>
-                            <span class="badge bg-primary-subtle text-primary">Recommended</span>
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Incident Time</span>
+                                <span class="badge bg-secondary-subtle text-secondary">Optional</span>
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem;">Recognizes: <em>Time of Occurrence, Crime Time, Incident Time, Time</em></div>
                         </li>
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>severity</code>
-                            <span class="badge bg-secondary-subtle text-secondary">Low/Med/High</span>
-                        </li>
-                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                            <code>description, status, source</code>
-                            <span class="badge bg-secondary-subtle text-secondary">Optional</span>
+                        <li class="list-group-item px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Optional Case Fields</span>
+                                <span class="badge bg-secondary-subtle text-secondary">Auto-Captured</span>
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem;">Also detects: <em>Crime Code, Victim Age, Victim Gender, Weapon Used, Severity, Status, Description, GPS Coordinates</em></div>
                         </li>
                     </ul>
 
                     <div class="p-3 bg-light rounded-3 border">
                         <span class="fw-semibold text-dark d-block mb-1"><i class="bi bi-lightbulb text-warning me-1"></i>Sample Template</span>
                         <p class="text-muted mb-2" style="font-size: 0.8rem;">Download a standardized CSV template pre-configured for instant upload.</p>
-                        <a href="#" class="btn btn-sm btn-outline-secondary w-100">
+                        <a href="{% url 'crime_data:download_template' %}" class="btn btn-sm btn-outline-secondary w-100">
                             <i class="bi bi-download me-1"></i> Download Template (.csv)
                         </a>
                     </div>
@@ -178,8 +189,8 @@
                                 </tr>
                             </thead>
                             <tbody class="small">
-                                {% if upload_history %}
-                                    {% for upload in upload_history %}
+                                {% if recent_uploads or upload_history %}
+                                    {% for upload in recent_uploads|default:upload_history %}
                                     <tr>
                                         <td class="ps-4 fw-semibold">
                                             <i class="bi bi-file-earmark-text text-primary me-2"></i>{{ upload.original_filename }}
@@ -198,9 +209,17 @@
                                         </td>
                                         <td class="text-muted">{{ upload.uploaded_at|date:"M d, Y H:i" }}</td>
                                         <td class="pe-4 text-end">
-                                            <a href="/crime-data/preview/?dataset_id={{ upload.id }}" class="btn btn-sm btn-outline-primary py-0 px-2" title="View Preview">
-                                                Preview
-                                            </a>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'crime_data:dataset_preview' upload.id %}" class="btn btn-sm btn-outline-primary py-0 px-2" title="View Preview & Quality">
+                                                    Preview
+                                                </a>
+                                                <a href="{% url 'analysis:analysis' %}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Run Analysis">
+                                                    Analyze
+                                                </a>
+                                                <a href="{% url 'model_training:train' %}?stage=2&dataset_id={{ upload.id }}" class="btn btn-sm btn-outline-success py-0 px-2" title="Train Model">
+                                                    Train
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -270,6 +289,15 @@
             fileInput.value = '';
             previewCard.style.display = 'none';
         });
+
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        if (uploadForm && uploadBtn) {
+            uploadForm.addEventListener('submit', () => {
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Analyzing Columns &amp; Ingesting...';
+            });
+        }
     });
 </script>
 {% endblock %}

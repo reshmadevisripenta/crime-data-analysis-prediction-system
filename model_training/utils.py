@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from django.conf import settings
@@ -17,6 +18,8 @@ ALGORITHMS = {
     'linear_regression': LinearRegression,
     'decision_tree': DecisionTreeRegressor,
     'gradient_boosting': GradientBoostingRegressor,
+    'ridge': Ridge,
+    'svr': SVR,
 }
 
 
@@ -80,6 +83,12 @@ def train_model(X_train, y_train, algorithm, hyperparams=None):
         model = model_class(max_depth=max_depth, random_state=42)
     elif algorithm == 'linear_regression':
         model = model_class()
+    elif algorithm == 'ridge':
+        alpha = float(hyperparams.get('alpha', 1.0))
+        model = model_class(alpha=alpha, random_state=42)
+    elif algorithm == 'svr':
+        C = float(hyperparams.get('C', 1.0))
+        model = model_class(C=C)
     else:
         model = RandomForestRegressor(n_estimators=100, random_state=42)
 
@@ -105,12 +114,17 @@ def evaluate_model(model, X_test, y_test):
     relative_err = min(mae / abs(mean_actual), 1.0)
     accuracy = float(max(0.0, (1.0 - relative_err) * 100))
 
+    actual_list = [round(float(v), 2) for v in (y_test.values if hasattr(y_test, 'values') else y_test)]
+    pred_list = [round(float(v), 2) for v in y_pred]
+
     return {
         'mae': round(mae, 4),
         'mse': round(mse, 4),
         'rmse': round(rmse, 4),
         'r2': round(r2, 4),
-        'accuracy': round(accuracy, 2)
+        'accuracy': round(accuracy, 2),
+        'actual': actual_list,
+        'predicted': pred_list,
     }
 
 

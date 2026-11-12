@@ -51,7 +51,7 @@ def sparql_query_view(request):
     Executes a user-submitted SPARQL query against the ontology.
     Saves the query execution history in SPARQLResult and returns JSON.
     """
-    query_text = request.POST.get('query', '').strip()
+    query_text = (request.POST.get('query') or request.POST.get('sparql_query') or '').strip()
     query_name = request.POST.get('name', 'Ad-hoc Query').strip()
 
     is_valid, err_msg = validate_sparql_query(query_text)
